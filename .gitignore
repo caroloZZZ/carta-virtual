@@ -23,3 +23,9 @@ db.sqlite3-journal
 .DS_Store
 Thumbs.db
 *.log
+
+# Backups y archivos temporales
+.backup_*
+*.bak
+.env.*
+.env.production
