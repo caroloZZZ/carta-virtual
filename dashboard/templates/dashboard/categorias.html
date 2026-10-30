@@ -1,0 +1,274 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Categorías - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Gestión de Categorías{% endblock %}
+{% block page_subtitle %}Organiza las categorías de tu menú{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Categorías</li>
+{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+    <i class="fas fa-plus-circle me-2"></i>Nueva Categoría
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>Lista de Categorías
+                </h5>
+                <span class="badge bg-primary">{{ categorias|length }} categorías</span>
+            </div>
+            <div class="card-body">
+                {% if categorias %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Orden</th>
+                                    <th>Icono</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Platos</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categorias %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ categoria.orden }}</span>
+                                        </td>
+                                        <td class="text-center" style="font-size: 1.5rem;">
+                                            <i class="bi {{ categoria.icono|default:'bi-tag' }} text-primary"></i>
+                                        </td>
+                                        <td>
+                                            <strong>{{ categoria.nombre }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ categoria.descripcion|truncatechars:50|default:"-" }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ categoria.platos.count }} platos</span>
+                                        </td>
+                                        <td>
+                                            {% if categoria.activa %}
+                                                <span class="badge bg-success">Activa</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactiva</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    onclick="editarCategoria({{ categoria.id }})"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editCategoryModal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="eliminarCategoria({{ categoria.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                        <h5>No hay categorías creadas</h5>
+                        <p class="text-muted">Comienza creando tu primera categoría</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+                            <i class="fas fa-plus-circle me-2"></i>Crear Categoría
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear Categoría -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Nueva Categoría
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'dashboard:crear_categoria' %}" id="createCategoryForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre de la categoría</label>
+                        <input type="text" class="form-control" name="nombre" required
+                               placeholder="Ej: Entradas, Platos principales, Postres">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3"
+                                  placeholder="Descripción opcional de la categoría"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Icono (Bootstrap Icons)</label>
+                            <select class="form-select" name="icono">
+                                <option value="bi-tag">📌 Por defecto</option>
+                                <option value="bi-egg-fried">🍳 Huevo</option>
+                                <option value="bi-cup-straw">🥤 Bebidas</option>
+                                <option value="bi-bread">🍞 Pan</option>
+                                <option value="bi-cake">🍰 Pastel</option>
+                                <option value="bi-emoji-smile">😊 Sonrisa</option>
+                            </select>
+                            <div class="form-text">Icono que verán los clientes</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Orden de aparición</label>
+                            <input type="number" class="form-control" name="orden" value="0" min="0">
+                            <div class="form-text">Menor número = aparece primero</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="activa" id="activa" checked>
+                        <label class="form-check-label" for="activa">Categoría activa</label>
+                        <div class="form-text">Si está inactiva, no se mostrará en la carta</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitCategory">
+                        <i class="fas fa-save me-2"></i>Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Categoría -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Editar Categoría
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'dashboard:editar_categoria' 0 %}" id="editCategoryForm">
+                {% csrf_token %}
+                <input type="hidden" name="categoria_id" id="edit_categoria_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre de la categoría</label>
+                        <input type="text" class="form-control" name="nombre" id="edit_nombre" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <textarea class="form-control" name="descripcion" id="edit_descripcion" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Icono</label>
+                            <select class="form-select" name="icono" id="edit_icono">
+                                <option value="bi-tag">📌 Por defecto</option>
+                                <option value="bi-egg-fried">🍳 Huevo</option>
+                                <option value="bi-cup-straw">🥤 Bebidas</option>
+                                <option value="bi-bread">🍞 Pan</option>
+                                <option value="bi-cake">🍰 Pastel</option>
+                                <option value="bi-emoji-smile">😊 Sonrisa</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Orden</label>
+                            <input type="number" class="form-control" name="orden" id="edit_orden" min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="activa" id="edit_activa">
+                        <label class="form-check-label" for="edit_activa">Categoría activa</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning" id="updateCategory">
+                        <i class="fas fa-save me-2"></i>Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para editar categoría
+function editarCategoria(id) {
+    // Aquí harías una petición AJAX para obtener los datos de la categoría
+    // Por ahora simulamos
+    fetch(`/api/categorias/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit_categoria_id').value = data.id;
+            document.getElementById('edit_nombre').value = data.nombre;
+            document.getElementById('edit_descripcion').value = data.descripcion || '';
+            document.getElementById('edit_icono').value = data.icono || 'bi-tag';
+            document.getElementById('edit_orden').value = data.orden || 0;
+            document.getElementById('edit_activa').checked = data.activa;
+
+            // Actualizar action del formulario
+            document.getElementById('editCategoryForm').action = `/dashboard/categorias/editar/${data.id}/`;
+        });
+}
+
+// Función para eliminar categoría
+function eliminarCategoria(id) {
+    if (confirm('¿Estás seguro de eliminar esta categoría?')) {
+        fetch(`/dashboard/categorias/eliminar/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al eliminar la categoría');
+            }
+        });
+    }
+}
+
+// Validación del formulario de creación
+document.getElementById('createCategoryForm').addEventListener('submit', function(e) {
+    const nombre = this.querySelector('[name="nombre"]').value;
+    if (nombre.trim().length < 3) {
+        e.preventDefault();
+        alert('El nombre debe tener al menos 3 caracteres');
+    }
+});
+</script>
+{% endblock %}

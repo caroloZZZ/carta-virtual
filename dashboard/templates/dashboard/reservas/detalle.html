@@ -1,0 +1,76 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Reserva {{ reserva.codigo }} - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Reserva {{ reserva.codigo }}{% endblock %}
+{% block page_subtitle %}{{ reserva.nombre_cliente }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:lista_reservas' %}">Reservas</a></li>
+<li class="breadcrumb-item active">{{ reserva.codigo }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Detalles de la Reserva</h5>
+                <span class="badge bg-{% if reserva.estado == 'confirmada' %}success{% elif reserva.estado == 'cancelada' %}danger{% elif reserva.estado == 'completada' %}info{% else %}warning{% endif %} fs-6">
+                    {{ reserva.get_estado_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Cliente</dt>
+                    <dd class="col-sm-8">{{ reserva.nombre_cliente }}</dd>
+                    <dt class="col-sm-4">Teléfono</dt>
+                    <dd class="col-sm-8">{{ reserva.telefono }}</dd>
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ reserva.email|default:'—' }}</dd>
+                    <dt class="col-sm-4">Fecha</dt>
+                    <dd class="col-sm-8">{{ reserva.fecha|date:'l, d F Y' }}</dd>
+                    <dt class="col-sm-4">Hora</dt>
+                    <dd class="col-sm-8">{{ reserva.hora|time:'H:i' }}</dd>
+                    <dt class="col-sm-4">Personas</dt>
+                    <dd class="col-sm-8">{{ reserva.personas }}</dd>
+                    <dt class="col-sm-4">Mesa</dt>
+                    <dd class="col-sm-8">{{ reserva.mesa|default:'Sin asignar' }}</dd>
+                    <dt class="col-sm-4">Notas</dt>
+                    <dd class="col-sm-8">{{ reserva.notas|default:'—' }}</dd>
+                    <dt class="col-sm-4">Creada</dt>
+                    <dd class="col-sm-8">{{ reserva.fecha_creacion|date:'d/m/Y H:i' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Acciones</h5></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        {% if reserva.estado == 'pendiente' %}
+                        <button type="submit" name="accion" value="confirmar" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Confirmar
+                        </button>
+                        {% endif %}
+                        {% if reserva.estado != 'completada' and reserva.estado != 'cancelada' %}
+                        <button type="submit" name="accion" value="completar" class="btn btn-info">
+                            <i class="fas fa-check-double me-2"></i>Marcar Completada
+                        </button>
+                        <button type="submit" name="accion" value="cancelar" class="btn btn-danger">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'dashboard:editar_reserva' reserva.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Editar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

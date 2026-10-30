@@ -1,0 +1,259 @@
+{% extends 'base_publica.html' %}
+{% load static %}
+
+{% block title %}Carrito - {{ restaurante.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .cart-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .cart-header h1 {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+    .cart-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+    }
+    @media (max-width: 768px) {
+        .cart-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .cart-items-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+    }
+    .cart-item-row {
+        display: flex;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .cart-item-row:last-child {
+        border-bottom: none;
+    }
+    .cart-item-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+    .cart-item-details {
+        flex: 1;
+    }
+    .cart-item-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    .cart-item-price {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    .cart-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .cart-quantity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .cart-quantity button {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: #f1f3f5;
+        font-weight: bold;
+    }
+    .cart-remove {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    .cart-summary-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+        position: sticky;
+        top: 100px;
+    }
+    .cart-summary-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .summary-total {
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-top: 2px solid #eee;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+    .btn-checkout-page {
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px;
+        font-weight: 600;
+        width: 100%;
+        font-size: 1.1rem;
+        margin-top: 20px;
+    }
+    .empty-cart {
+        text-align: center;
+        padding: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-page-container">
+    <div class="cart-header">
+        <h1>Tu Carrito</h1>
+        <p class="text-muted">Revisa los items antes de confirmar</p>
+    </div>
+
+    <div class="cart-grid">
+        <div class="cart-items-card">
+            <div id="cartItemsList">
+                <!-- Se llena con JS -->
+                <div class="empty-cart" id="emptyCartMessage">
+                    <i class="bi bi-cart-x" style="font-size: 3rem; color: #ccc;"></i>
+                    <h4 class="mt-3">Tu carrito está vacío</h4>
+                    <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-primary mt-3">
+                        Ver Menú
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="cart-summary-card">
+            <div class="cart-summary-title">Resumen del pedido</div>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="summarySubtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Envío</span>
+                <span>Gratis</span>
+            </div>
+            <div class="summary-total d-flex justify-content-between">
+                <span>Total</span>
+                <span id="summaryTotal">$0.00</span>
+            </div>
+            <button class="btn-checkout-page" onclick="proceedToCheckout()" id="proceedBtn" disabled>
+                Proceder al pago
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/carrito.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const restauranteUUID = "{{ restaurante.qr_uuid }}";
+    initCart(restauranteUUID);
+    renderCartPage();
+});
+
+function renderCartPage() {
+    const cart = getCart("{{ restaurante.qr_uuid }}");
+    const items = cart.items;
+    const container = document.getElementById('cartItemsList');
+    const emptyMsg = document.getElementById('emptyCartMessage');
+    const subtotalSpan = document.getElementById('summarySubtotal');
+    const totalSpan = document.getElementById('summaryTotal');
+    const proceedBtn = document.getElementById('proceedBtn');
+
+    if (Object.keys(items).length === 0) {
+        container.innerHTML = emptyMsg.outerHTML;
+        subtotalSpan.textContent = '$0.00';
+        totalSpan.textContent = '$0.00';
+        proceedBtn.disabled = true;
+        return;
+    }
+
+    proceedBtn.disabled = false;
+    let html = '';
+    let subtotal = 0;
+
+    for (const platoId in items) {
+        const item = items[platoId];
+        const itemSubtotal = item.precio * item.cantidad;
+        subtotal += itemSubtotal;
+        html += `
+        <div class="cart-item-row" data-id="${platoId}">
+            <img src="${item.imagen_url || '/static/images/placeholder.png'}" class="cart-item-image" alt="${item.nombre}">
+            <div class="cart-item-details">
+                <div class="cart-item-name">${item.nombre}</div>
+                <div class="cart-item-price">$${item.precio} c/u</div>
+                <div class="cart-item-actions">
+                    <div class="cart-quantity">
+                        <button onclick="updateCartItemPage('${platoId}', -1)">−</button>
+                        <span>${item.cantidad}</span>
+                        <button onclick="updateCartItemPage('${platoId}', 1)">+</button>
+                    </div>
+                    <span class="cart-remove" onclick="removeCartItemPage('${platoId}')">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </span>
+                </div>
+            </div>
+            <div class="fw-bold">$${itemSubtotal.toFixed(2)}</div>
+        </div>
+        `;
+    }
+
+    container.innerHTML = html;
+    subtotalSpan.textContent = `$${subtotal.toFixed(2)}`;
+    totalSpan.textContent = `$${subtotal.toFixed(2)}`; // asumiendo sin impuestos
+}
+
+function updateCartItemPage(platoId, change) {
+    const restauranteUUID = "{{ restaurante.qr_uuid }}";
+    const cart = getCart(restauranteUUID);
+    if (cart.items[platoId]) {
+        cart.items[platoId].cantidad += change;
+        if (cart.items[platoId].cantidad <= 0) {
+            delete cart.items[platoId];
+        }
+        localStorage.setItem(`cart_${restauranteUUID}`, JSON.stringify(cart));
+        renderCartPage();
+    }
+}
+
+function removeCartItemPage(platoId) {
+    const restauranteUUID = "{{ restaurante.qr_uuid }}";
+    const cart = getCart(restauranteUUID);
+    delete cart.items[platoId];
+    localStorage.setItem(`cart_${restauranteUUID}`, JSON.stringify(cart));
+    renderCartPage();
+}
+
+function proceedToCheckout() {
+    // Redirigir a checkout (si tienes una página de checkout separada)
+    window.location.href = "{% url 'clientes:crear_pedido_api' restaurante.qr_uuid %}";
+}
+</script>
+{% endblock %}

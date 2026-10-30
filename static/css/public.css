@@ -1,0 +1,65 @@
+/* public.css - Estilos para la parte pública */
+
+:root {
+    --primary: #e63946;
+    --primary-dark: #c82333;
+    --secondary: #ffb703;
+    --success: #2a9d8f;
+    --light: #f8f9fa;
+    --dark: #2b2d42;
+    --gray: #6c757d;
+    --border-radius: 20px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--light);
+    color: var(--dark);
+    margin: 0;
+    padding: 0;
+}
+
+.container-custom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Botones generales */
+.btn-primary {
+    background: var(--primary);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(230,57,70,0.3);
+}
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Loading spinner */
+.spinner-border {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 0.15em;
+}
+
+/* Scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .container-custom { padding: 0 10px; }
+}

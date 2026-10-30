@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{% block title %}Carta Virtual{% endblock %}</title>
+
+    <!-- CDNs externos (NO se comprimen) -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <link href="{% static 'vendor/fonts/poppins.css' %}" rel="stylesheet">
+
+        <style>
+            * {
+                font-family: 'Poppins', sans-serif;
+            }
+            body {
+                background-color: #f8f9fa;
+                margin: 0;
+                padding: 0;
+            }
+            .container-custom {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+        </style>
+        {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <footer class="text-center py-3 mt-4 bg-light small text-muted">
+        <p>© {{ now|date:"Y" }} Carta Virtual · Disfruta tu experiencia</p>
+    </footer>
+
+    <!-- CDNs externos JS -->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    {# No hay compress aquí, pero si hubiera, el bloque extra_js estaría fuera #}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,99 @@
+{% load static %}
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h3>{{ user.restaurante.nombre|default:'Dashboard' }}</h3>
+    </div>
+
+    <ul class="list-unstyled">
+        <!-- Dashboard -->
+        <li>
+            <a href="{% url 'dashboard:dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </li>
+
+        <!-- Menú (desplegable) -->
+        <li>
+            <a href="#menuSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="bi bi-menu-button-wide"></i> Menú
+            </a>
+            <ul class="collapse list-unstyled" id="menuSubmenu">
+                <li>
+                    <a href="{% url 'dashboard:lista_categorias' %}">
+                        <i class="bi bi-tags"></i> Categorías
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:platos' %}">
+                        <i class="bi bi-basket"></i> Platos
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Pedidos -->
+        <li>
+            <a href="{% url 'dashboard:lista_pedidos' %}">
+                <i class="bi bi-truck"></i> Pedidos
+                {% if pedidos_pendientes > 0 %}
+                    <span class="badge bg-danger">{{ pedidos_pendientes }}</span>
+                {% endif %}
+            </a>
+        </li>
+
+        <!-- Reservas -->
+        <li>
+            <a href="{% url 'dashboard:lista_reservas' %}">
+                <i class="bi bi-calendar-check"></i> Reservas
+            </a>
+        </li>
+
+        <!-- Clientes -->
+        <li>
+            <a href="{% url 'dashboard:clientes' %}">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+        </li>
+
+        <!-- Estadísticas -->
+        <li>
+            <a href="{% url 'dashboard:estadisticas' %}">
+                <i class="bi bi-graph-up"></i> Estadísticas
+            </a>
+        </li>
+
+        <!-- QR -->
+        <li>
+            <a href="{% url 'dashboard:ver_qr' %}">
+                <i class="bi bi-qr-code"></i> Código QR
+            </a>
+        </li>
+
+        <!-- Configuración (desplegable) -->
+        <li>
+            <a href="#configSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+            <ul class="collapse list-unstyled" id="configSubmenu">
+                <li>
+                    <a href="{% url 'dashboard:mi_restaurante' %}">
+                        <i class="bi bi-shop"></i> Mi Restaurante
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:configuracion_restaurante' %}">
+                        <i class="bi bi-sliders"></i> Preferencias
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Salir -->
+        <li class="mt-4">
+            <a href="{% url 'logout' %}" class="text-danger">
+                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </a>
+        </li>
+    </ul>
+</div>

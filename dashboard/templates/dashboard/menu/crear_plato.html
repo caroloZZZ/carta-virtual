@@ -1,0 +1,201 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Crear Plato - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Plato
+        </h1>
+        <!-- CORREGIDO: uso del namespace dashboard: y nombre de URL correcto -->
+        <a href="{% url 'dashboard:platos' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Menú
+        </a>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="bi bi-info-circle me-2"></i>Información del Plato
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="platoForm">
+                        {% csrf_token %}
+
+                        <!-- Categoría -->
+                        <div class="form-group mb-3">
+                            <label for="categoria" class="form-label fw-bold">
+                                <i class="bi bi-tags me-1"></i>Categoría
+                            </label>
+                            <select class="form-control" id="categoria" name="categoria" required>
+                                <option value="">Selecciona una categoría</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Nombre del Plato -->
+                        <div class="form-group mb-3">
+                            <label for="nombre" class="form-label fw-bold">
+                                <i class="bi bi-card-text me-1"></i>Nombre del Plato
+                            </label>
+                            <input type="text" class="form-control" id="nombre" name="nombre"
+                                   placeholder="Ej: Ropa Vieja" required maxlength="100">
+                            <div class="form-text">Máximo 100 caracteres</div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="form-group mb-3">
+                            <label for="descripcion" class="form-label fw-bold">
+                                <i class="bi bi-text-paragraph me-1"></i>Descripción
+                            </label>
+                            <textarea class="form-control" id="descripcion" name="descripcion"
+                                      rows="3" placeholder="Describe tu plato..."></textarea>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="form-group mb-3">
+                            <label for="precio" class="form-label fw-bold">
+                                <i class="bi bi-currency-dollar me-1"></i>Precio
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio" name="precio"
+                                       step="0.01" min="0" placeholder="0.00" required>
+                            </div>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="form-group mb-3">
+                            <label for="imagen" class="form-label fw-bold">
+                                <i class="bi bi-image me-1"></i>Imagen del Plato
+                            </label>
+                            <input type="file" class="form-control" id="imagen" name="imagen"
+                                   accept="image/*">
+                            <div class="form-text">Formatos: JPG, PNG, GIF. Tamaño máximo: 2MB</div>
+                        </div>
+
+                        <!-- Vista previa imagen -->
+                        <div class="mb-3" id="imagePreviewContainer" style="display: none;">
+                            <img id="imagePreview" class="img-thumbnail" style="max-height: 200px;">
+                        </div>
+
+                        <!-- Características -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="disponible" name="disponible" checked>
+                                    <label class="form-check-label" for="disponible">
+                                        <i class="bi bi-check-circle me-1"></i>Disponible
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="destacado" name="destacado">
+                                    <label class="form-check-label" for="destacado">
+                                        <i class="bi bi-star me-1"></i>Destacado
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="vegetariano" name="vegetariano">
+                                    <label class="form-check-label" for="vegetariano">
+                                        <i class="bi bi-flower1 me-1"></i>Vegetariano
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="picante" name="picante">
+                                    <label class="form-check-label" for="picante">
+                                        <i class="bi bi-fire me-1"></i>Picante
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="gluten" name="gluten">
+                                    <label class="form-check-label" for="gluten">
+                                        <i class="bi bi-wheat me-1"></i>Contiene Gluten
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tiempo de preparación -->
+                        <div class="form-group mb-3">
+                            <label for="tiempo_preparacion" class="form-label fw-bold">
+                                <i class="bi bi-clock me-1"></i>Tiempo de Preparación (minutos)
+                            </label>
+                            <input type="number" class="form-control" id="tiempo_preparacion"
+                                   name="tiempo_preparacion" min="1" max="120" value="15">
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Guardar Plato
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Vista previa de imagen
+    const imagenInput = document.getElementById('imagen');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const preview = document.getElementById('imagePreview');
+
+    imagenInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+
+            reader.addEventListener('load', function() {
+                preview.src = reader.result;
+                previewContainer.style.display = 'block';
+            });
+
+            reader.readAsDataURL(file);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    });
+
+    // Validación de formulario
+    const form = document.getElementById('platoForm');
+    form.addEventListener('submit', function(e) {
+        const precio = document.getElementById('precio').value;
+        if (parseFloat(precio) <= 0) {
+            e.preventDefault();
+            alert('El precio debe ser mayor a 0');
+            return false;
+        }
+        return true;
+    });
+});
+</script>
+{% endblock %}

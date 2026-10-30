@@ -1,0 +1,142 @@
+{% extends 'base/base_auth.html' %}
+{% load static %}
+
+{% block title %}Registro - Carta Virtual Cuba{% endblock %}
+
+{% block auth_content %}
+<div class="text-center mb-4">
+    <h4 class="fw-bold">¡Comienza tu prueba gratis!</h4>
+    <p class="text-muted">Registra tu restaurante en menos de 2 minutos</p>
+</div>
+
+<!-- Barra de progreso -->
+<div class="progress mb-4" style="height: 5px;">
+    <div class="progress-bar bg-success" role="progressbar" style="width: 50%;" id="progressBar"></div>
+</div>
+
+<!-- Paso 1: Datos de Usuario -->
+<div id="step1">
+    <h6 class="mb-3">
+        <span class="badge bg-success me-2">1</span>
+        Información de la cuenta
+    </h6>
+
+    <form method="post" enctype="multipart/form-data" id="registerForm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Nombre de usuario</label>
+            <input type="text" class="form-control" name="username" required>
+            <div class="form-text">Mínimo 4 caracteres</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email</label>
+            <input type="email" class="form-control" name="email" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Contraseña</label>
+            <input type="password" class="form-control" name="password1" required>
+            <div class="form-text">Mínimo 8 caracteres</div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Confirmar contraseña</label>
+            <input type="password" class="form-control" name="password2" required>
+        </div>
+
+        <button type="button" class="btn btn-success w-100" id="nextBtn">
+            Siguiente <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+    </form>
+</div>
+
+<!-- Paso 2: Datos del Restaurante (oculto inicialmente) -->
+<div id="step2" style="display: none;">
+    <h6 class="mb-3">
+        <span class="badge bg-success me-2">2</span>
+        Información del restaurante
+    </h6>
+
+    <form method="post" enctype="multipart/form-data" id="restauranteForm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Nombre del restaurante</label>
+            <input type="text" class="form-control" name="nombre" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tipo de negocio</label>
+            <select class="form-select" name="tipo" required>
+                <option value="">Selecciona...</option>
+                <option value="restaurante">Restaurante</option>
+                <option value="cafeteria">Cafetería</option>
+                <option value="paladar">Paladar</option>
+                <option value="bar">Bar</option>
+                <option value="pizzeria">Pizzería</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Teléfono</label>
+            <input type="tel" class="form-control" name="telefono" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Dirección</label>
+            <textarea class="form-control" name="direccion" rows="2" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Descripción</label>
+            <textarea class="form-control" name="descripcion" rows="2" placeholder="Breve descripción de tu negocio..."></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Logo del restaurante</label>
+            <input type="file" class="form-control" name="logo" accept="image/*">
+            <div class="form-text">Tamaño máximo: 2MB. Formatos: JPG, PNG.</div>
+        </div>
+
+        <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="terms" required>
+            <label class="form-check-label" for="terms">
+                Acepto los <a href="#" class="text-decoration-none">Términos y Condiciones</a>
+            </label>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary w-50" id="prevBtn">
+                <i class="bi bi-arrow-left me-2"></i>Anterior
+            </button>
+            <button type="submit" class="btn btn-success w-50" id="submitBtn">
+                <i class="bi bi-check-circle me-2"></i>Completar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const progressBar = document.getElementById('progressBar');
+
+    nextBtn.addEventListener('click', function() {
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+        progressBar.style.width = '100%';
+    });
+
+    prevBtn.addEventListener('click', function() {
+        step1.style.display = 'block';
+        step2.style.display = 'none';
+        progressBar.style.width = '50%';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base_publica.html' %}
+{% load static %}
+
+{% block title %}Verificar Reserva - Carta Virtual Cuba{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="mb-4">Verificar Reserva</h3>
+                    <form method="get" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" name="codigo" class="form-control form-control-lg"
+                                   placeholder="Código de reserva" value="{{ codigo }}" required>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if reserva %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Reserva #{{ reserva.codigo }}</h5>
+                            <p class="mb-1"><strong>Restaurante:</strong> {{ reserva.restaurante.nombre }}</p>
+                            <p class="mb-1"><strong>Fecha:</strong> {{ reserva.fecha|date:'l, d F Y' }}</p>
+                            <p class="mb-1"><strong>Hora:</strong> {{ reserva.hora|time:'H:i' }}</p>
+                            <p class="mb-1"><strong>Personas:</strong> {{ reserva.personas }}</p>
+                            <p class="mb-0">
+                                <strong>Estado:</strong>
+                                <span class="badge bg-{% if reserva.estado == 'confirmada' %}success{% elif reserva.estado == 'cancelada' %}danger{% else %}warning{% endif %}">
+                                    {{ reserva.get_estado_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    {% elif codigo %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No se encontró ninguna reserva con el código "{{ codigo }}"
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

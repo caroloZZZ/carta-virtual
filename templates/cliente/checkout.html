@@ -1,0 +1,168 @@
+{% extends 'base_publica.html' %}
+
+{% block title %}Checkout - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i> Finalizar Pedido</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'clientes:crear_pedido_api' restaurante.qr_uuid %}" id="checkoutForm">
+                        {% csrf_token %}
+
+                        <!-- Información del cliente -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-user me-2"></i> Información Personal</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombre" class="form-label">Nombre Completo *</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="telefono" class="form-label">Teléfono *</label>
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="mesa" class="form-label">Mesa o Número de Orden</label>
+                                    <input type="text" class="form-control" id="mesa" name="mesa" placeholder="Ej: Mesa 5, Orden para llevar">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen del pedido -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-receipt me-2"></i> Resumen del Pedido</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="checkoutItems">
+                                        <!-- Los items se cargarán con JavaScript -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                            <td><strong id="checkoutSubtotal">$0.00</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Impuestos:</strong></td>
+                                            <td><strong id="checkoutImpuestos">$0.00</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                            <td><strong id="checkoutTotal">$0.00</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Notas adicionales -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-sticky-note me-2"></i> Notas Adicionales</h5>
+                            <textarea class="form-control" id="notas" name="notas" rows="3"
+                                      placeholder="Instrucciones especiales, alergias, etc."></textarea>
+                        </div>
+
+                        <!-- Método de pago -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-credit-card me-2"></i> Método de Pago</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                El pago se realizará al recibir el pedido. Actualmente solo aceptamos efectivo.
+                            </div>
+                        </div>
+
+                        <!-- Carrito oculto -->
+                        <input type="hidden" name="carrito" id="hiddenCart">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitButton">
+                                <i class="fas fa-paper-plane me-2"></i> Enviar Pedido
+                            </button>
+                            <a href="{% url 'clientes:ver_carrito' restaurante.qr_uuid %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Volver al Carrito
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/carrito.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const restauranteUUID = "{{ restaurante.qr_uuid }}";
+        initCart(restauranteUUID);
+        renderCheckout();
+
+        // Prevenir envío doble
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Enviando...';
+        });
+    });
+
+    function renderCheckout() {
+        const restauranteUUID = "{{ restaurante.qr_uuid }}";
+        const cart = getCart(restauranteUUID);
+        const checkoutItemsDiv = document.getElementById('checkoutItems');
+        const hiddenCartInput = document.getElementById('hiddenCart');
+
+        let html = '';
+        let subtotal = 0;
+        const cartData = [];
+
+        for (const platoId in cart.items) {
+            const item = cart.items[platoId];
+            const itemSubtotal = item.precio * item.cantidad;
+            subtotal += itemSubtotal;
+
+            html += `
+            <tr>
+                <td>${item.nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>$${item.precio.toFixed(2)}</td>
+                <td>$${itemSubtotal.toFixed(2)}</td>
+            </tr>
+            `;
+
+            cartData.push({
+                plato_id: parseInt(platoId),
+                cantidad: item.cantidad,
+                precio: item.precio
+            });
+        }
+
+        checkoutItemsDiv.innerHTML = html;
+
+        // Calcular totales
+        const impuestos = subtotal * 0.10;
+        const total = subtotal + impuestos;
+
+        document.getElementById('checkoutSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('checkoutImpuestos').textContent = `$${impuestos.toFixed(2)}`;
+        document.getElementById('checkoutTotal').textContent = `$${total.toFixed(2)}`;
+
+        // Pasar el carrito como JSON en el formulario
+        hiddenCartInput.value = JSON.stringify(cartData);
+    }
+</script>
+{% endblock %}

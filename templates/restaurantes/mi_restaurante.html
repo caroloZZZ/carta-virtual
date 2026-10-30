@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Mi Restaurante - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'includes/sidebar_dashboard.html' %}
+
+        <!-- Contenido principal -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mi Restaurante</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'dashboard:generar_qr' %}" class="btn btn-primary">
+                        <i class="bi bi-qr-code"></i> Ver QR
+                    </a>
+                </div>
+            </div>
+
+            <!-- Información actual -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Información Actual</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center mb-3">
+                                    {% if restaurante.logo %}
+                                    <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}"
+                                         class="img-fluid rounded" style="max-height: 150px;">
+                                    {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                         style="height: 150px; width: 150px;">
+                                        <i class="bi bi-shop fs-1 text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <h4>{{ restaurante.nombre }}</h4>
+                                    <p class="text-muted">{{ restaurante.descripcion }}</p>
+                                    <ul class="list-unstyled">
+                                        <li><i class="bi bi-tag"></i> <strong>Tipo:</strong> {{ restaurante.get_tipo_display }}</li>
+                                        <li><i class="bi bi-geo-alt"></i> <strong>Dirección:</strong> {{ restaurante.direccion }}</li>
+                                        <li><i class="bi bi-telephone"></i> <strong>Teléfono:</strong> {{ restaurante.telefono }}</li>
+                                        <li><i class="bi bi-envelope"></i> <strong>Email:</strong> {{ restaurante.email }}</li>
+                                        <li><i class="bi bi-calendar"></i> <strong>Registrado:</strong> {{ restaurante.fecha_registro|date:"d/m/Y" }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Estadísticas</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-eye text-primary"></i>
+                                    <strong>Visitas QR:</strong> {{ restaurante.visitas_qr }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-cart text-success"></i>
+                                    <strong>Pedidos totales:</strong> {{ restaurante.total_pedidos }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-info"></i>
+                                    <strong>Estado:</strong>
+                                    {% if restaurante.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-shield-check text-warning"></i>
+                                    <strong>Verificado:</strong>
+                                    {% if restaurante.verificado %}
+                                    <span class="badge bg-success">Sí</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de edición -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Editar Información</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" id="restauranteForm">
+                                {% csrf_token %}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.nombre|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.tipo|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.telefono|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.email|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.direccion|as_crispy_field }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.descripcion|as_crispy_field }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.logo|as_crispy_field }}
+                                    <small class="text-muted">
+                                        Tamaño máximo: 2MB. Formatos: JPG, PNG, GIF.
+                                    </small>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.mostrar_precios|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.acepta_pedidos|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.acepta_reservas|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Volver
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('restauranteForm').addEventListener('submit', function(e) {
+    // Validación básica
+    const telefono = document.getElementById('id_telefono').value;
+    const email = document.getElementById('id_email').value;
+
+    if (!telefono.match(/^[0-9+\-\s]+$/)) {
+        e.preventDefault();
+        alert('El teléfono solo puede contener números, +, - y espacios.');
+        return;
+    }
+
+    if (email && !email.includes('@')) {
+        e.preventDefault();
+        alert('Por favor ingresa un email válido.');
+        return;
+    }
+});
+</script>
+{% endblock %}

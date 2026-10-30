@@ -1,0 +1,211 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Pedidos - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Gestión de Pedidos{% endblock %}
+{% block page_subtitle %}Administra todos los pedidos de tu restaurante{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Pedidos</li>
+{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <button class="btn btn-outline-primary" onclick="exportarPedidos()">
+        <i class="fas fa-download me-2"></i>Exportar
+    </button>
+    <button class="btn btn-primary" onclick="location.reload()">
+        <i class="fas fa-sync-alt me-2"></i>Actualizar
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Contenedor para notificaciones Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1050;"></div>
+
+<!-- Filtros rápidos -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="btn-group w-100" role="group">
+            <button class="btn btn-outline-primary active" onclick="filtrarEstado('todos')" id="filtroTodos">Todos</button>
+            <button class="btn btn-outline-warning" onclick="filtrarEstado('pendiente')" id="filtroPendiente"><i class="fas fa-clock me-1"></i>Pendientes</button>
+            <button class="btn btn-outline-info" onclick="filtrarEstado('confirmado')" id="filtroConfirmado"><i class="fas fa-check-circle me-1"></i>Confirmados</button>
+            <button class="btn btn-outline-primary" onclick="filtrarEstado('preparando')" id="filtroPreparando"><i class="fas fa-utensils me-1"></i>Preparando</button>
+            <button class="btn btn-outline-success" onclick="filtrarEstado('listo')" id="filtroListo"><i class="fas fa-check me-1"></i>Listos</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de pedidos -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2 text-primary"></i>Lista de Pedidos</h5>
+        <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" id="searchPedido" placeholder="Buscar..." style="width: 200px;">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="pedidosTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Mesa</th>
+                        <th>Total</th>
+                        <th style="width: 200px;">Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                        <!-- AQUÍ AÑADIMOS data-pedido-id PARA QUE EL JS ENCUENTRE LA FILA -->
+                        <tr class="pedido-row" data-pedido-id="{{ pedido.id }}" data-estado="{{ pedido.estado }}">
+                            <td><strong>#{{ pedido.codigo }}</strong></td>
+                            <td>{{ pedido.fecha_creacion|date:"H:i" }} <small class="text-muted">{{ pedido.fecha_creacion|date:"d/m" }}</small></td>
+                            <td>
+                                <strong>{{ pedido.nombre_cliente }}</strong>
+                                {% if pedido.telefono_cliente %}<br><small class="text-muted">{{ pedido.telefono_cliente }}</small>{% endif %}
+                            </td>
+                            <td>{% if pedido.mesa %}<span class="badge bg-secondary">M{{ pedido.mesa }}</span>{% else %}-{% endif %}</td>
+                            <td><strong>${{ pedido.total|floatformat:2 }}</strong></td>
+                            <td>
+                                <!-- AÑADIMOS UNA CLASE PARA EL SPINNER -->
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select estado-select"
+                                            id="select-{{ pedido.id }}"
+                                            onchange="cambiarEstado({{ pedido.id }}, this)">
+                                        <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>🟡 Pendiente</option>
+                                        <option value="confirmado" {% if pedido.estado == 'confirmado' %}selected{% endif %}>🔵 Confirmado</option>
+                                        <option value="preparando" {% if pedido.estado == 'preparando' %}selected{% endif %}>🟠 Preparando</option>
+                                        <option value="listo" {% if pedido.estado == 'listo' %}selected{% endif %}>🟢 Listo</option>
+                                        <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>✅ Entregado</option>
+                                        <option value="cancelado" {% if pedido.estado == 'cancelado' %}selected{% endif %}>❌ Cancelado</option>
+                                    </select>
+                                    <span class="input-group-text d-none bg-white" id="spinner-{{ pedido.id }}">
+                                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'dashboard:detalle_pedido' pedido.id %}" class="btn btn-sm btn-outline-primary" title="Ver detalles"><i class="fas fa-eye"></i></a>
+                                {% if pedido.notas %}
+                                    <button class="btn btn-sm btn-outline-info" onclick="verNotas('{{ pedido.notas|escapejs }}')" title="Ver notas"><i class="fas fa-sticky-note"></i></button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No hay pedidos aún</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Notas -->
+<div class="modal fade" id="notasModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-info text-white">
+            <h5 class="modal-title"><i class="fas fa-sticky-note me-2"></i>Notas</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"><p id="notasTexto" class="mb-0"></p></div>
+    </div></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let estadoActual = 'todos';
+
+function filtrarEstado(estado) {
+    estadoActual = estado;
+    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+    const btnId = `filtro${estado.charAt(0).toUpperCase() + estado.slice(1)}`;
+    const btn = document.getElementById(btnId);
+    if(btn) btn.classList.add('active');
+    aplicarFiltros();
+}
+
+// 🔥 FUNCIÓN CORREGIDA DE CAMBIO DE ESTADO
+function cambiarEstado(pedidoId, selectElement) {
+    const nuevoEstado = selectElement.value;
+    const row = document.querySelector(`tr[data-pedido-id="${pedidoId}"]`);
+    const spinner = document.getElementById(`spinner-${pedidoId}`);
+
+    // Mostrar spinner y deshabilitar select
+    selectElement.disabled = true;
+    spinner.classList.remove('d-none');
+
+    // La URL correcta (antes llamaba a /api/ que no existía)
+    const url = `/dashboard/pedidos/${pedidoId}/cambiar-estado/`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ estado: nuevoEstado })
+    })
+    .then(response => {
+        if(!response.ok) throw new Error("Error en el servidor");
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            row.setAttribute('data-estado', nuevoEstado);
+            mostrarToast('¡Estado actualizado!', 'success');
+        } else {
+            mostrarToast('Error: ' + data.error, 'danger');
+            selectElement.value = row.getAttribute('data-estado'); // Revertir
+        }
+    })
+    .catch(error => {
+        mostrarToast('Error de conexión', 'danger');
+        selectElement.value = row.getAttribute('data-estado');
+    })
+    .finally(() => {
+        selectElement.disabled = false;
+        spinner.classList.add('d-none');
+    });
+}
+
+// Toast interactivo
+function mostrarToast(mensaje, tipo) {
+    const container = document.getElementById('toastContainer');
+    const toastHTML = `
+        <div class="toast align-items-center text-white bg-${tipo} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"><i class="fas fa-check-circle me-2"></i>${mensaje}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>`;
+    container.insertAdjacentHTML('beforeend', toastHTML);
+    const toastElement = container.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    toast.show();
+    toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+}
+
+document.getElementById('searchPedido').addEventListener('keyup', aplicarFiltros);
+
+function aplicarFiltros() {
+    const search = document.getElementById('searchPedido').value.toLowerCase();
+    document.querySelectorAll('.pedido-row').forEach(fila => {
+        let mostrar = true;
+        if (estadoActual !== 'todos' && fila.dataset.estado !== estadoActual) mostrar = false;
+        if (mostrar && search && !fila.textContent.toLowerCase().includes(search)) mostrar = false;
+        fila.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function verNotas(notas) {
+    document.getElementById('notasTexto').textContent = notas;
+    new bootstrap.Modal(document.getElementById('notasModal')).show();
+}
+</script>
+{% endblock %}

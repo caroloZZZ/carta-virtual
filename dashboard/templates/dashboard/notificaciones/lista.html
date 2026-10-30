@@ -1,0 +1,66 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Notificaciones - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Notificaciones{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Notificaciones</li>
+{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-outline-secondary" onclick="marcarTodasLeidas()">
+    <i class="fas fa-check-double me-2"></i>Marcar todas como leídas
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for notif in notificaciones %}
+            <div class="list-group-item {% if not notif.leida %}list-group-item-primary{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ notif.titulo }}</h6>
+                        <p class="mb-1 text-muted small">{{ notif.mensaje }}</p>
+                        <small class="text-muted">{{ notif.creada_en|timesince }} ago</small>
+                    </div>
+                    <div>
+                        {% if not notif.leida %}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="marcarLeida({{ notif.id }})">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="list-group-item text-center py-4">
+                <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                <p class="mb-0">No hay notificaciones</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function marcarLeida(id) {
+    fetch("{% url 'dashboard:marcar_notificaciones_leidas' %}", {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+        body: JSON.stringify({notificacion_id: id, action: 'marcar_leida'})
+    }).then(r => r.json()).then(d => { if(d.success) location.reload(); });
+}
+function marcarTodasLeidas() {
+    fetch("{% url 'dashboard:marcar_notificaciones_leidas' %}", {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'marcar_todas_leidas'})
+    }).then(r => r.json()).then(d => { if(d.success) location.reload(); });
+}
+</script>
+{% endblock %}

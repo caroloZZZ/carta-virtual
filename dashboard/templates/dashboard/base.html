@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - Carta Virtual Cuba{% endblock %}</title>
+
+    <!-- CDNs externos -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+        <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+        <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+        <style>
+            :root {
+                --primary: #dc3545;
+                --primary-dark: #c82333;
+                --secondary: #ffc107;
+                --success: #198754;
+                --info: #0dcaf0;
+                --warning: #ffc107;
+                --danger: #dc3545;
+                --light: #f8f9fa;
+                --dark: #212529;
+            }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f4f4f4;
+            }
+            #wrapper {
+                display: flex;
+                width: 100%;
+            }
+            #sidebar-wrapper {
+                min-width: 250px;
+                max-width: 250px;
+                min-height: 100vh;
+                background: var(--dark);
+                color: white;
+                transition: all 0.3s;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            #sidebar-wrapper .sidebar-heading {
+                padding: 1.5rem 1.25rem;
+                font-size: 1.2rem;
+                background: rgba(0,0,0,0.2);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            #sidebar-wrapper .list-group-item {
+                background: var(--dark);
+                color: rgba(255,255,255,0.8);
+                border: none;
+                padding: 1rem 1.25rem;
+                border-left: 3px solid transparent;
+                transition: all 0.3s;
+            }
+            #sidebar-wrapper .list-group-item:hover {
+                background: rgba(255,255,255,0.1);
+                color: white;
+                border-left-color: var(--primary);
+            }
+            #sidebar-wrapper .list-group-item.active {
+                background: rgba(220, 53, 69, 0.2);
+                color: white;
+                border-left-color: var(--primary);
+                font-weight: 500;
+            }
+            #page-content-wrapper {
+                flex: 1;
+                padding: 20px;
+                min-width: 0;
+            }
+            .restaurant-logo-sidebar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid var(--primary);
+            }
+            .navbar {
+                padding: 1rem;
+                background: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                border-radius: 10px;
+            }
+            .card {
+                border: none;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: transform 0.3s;
+            }
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            }
+            .btn-primary {
+                background-color: var(--primary);
+                border-color: var(--primary);
+            }
+            .btn-primary:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+            }
+            .text-primary { color: var(--primary) !important; }
+            .bg-primary { background-color: var(--primary) !important; }
+            @media (max-width: 768px) {
+                #sidebar-wrapper {
+                    margin-left: -250px;
+                }
+                #sidebar-wrapper.toggled {
+                    margin-left: 0;
+                }
+            }
+        </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <div class="border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4">
+                <a href="{% url 'dashboard:dashboard' %}" class="text-white text-decoration-none">
+                    {% if user.restaurante.logo %}
+                        <img src="{{ user.restaurante.logo.url }}" alt="{{ user.restaurante.nombre }}"
+                             class="restaurant-logo-sidebar mb-2">
+                    {% else %}
+                        <i class="fas fa-utensils fa-2x text-primary mb-2"></i>
+                    {% endif %}
+                    <h5 class="mt-2 mb-0 text-truncate">{{ user.restaurante.nombre|default:"Mi Restaurante" }}</h5>
+                    <small class="text-muted"><i class="fas fa-qrcode me-1"></i>Panel de Control</small>
+                </a>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'dashboard:dashboard' %}"
+                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <div class="px-3 mt-3 mb-2">
+                    <small class="text-muted"><i class="fas fa-utensils me-1"></i> MENÚ</small>
+                </div>
+                <a href="{% url 'dashboard:lista_categorias' %}"
+                   class="list-group-item list-group-item-action {% if 'categoria' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-list me-2"></i> Categorías
+                </a>
+                <a href="{% url 'dashboard:platos' %}"
+                   class="list-group-item list-group-item-action {% if 'plato' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-hamburger me-2"></i> Platos
+                </a>
+                <div class="px-3 mt-3 mb-2">
+                    <small class="text-muted"><i class="fas fa-shopping-cart me-1"></i> PEDIDOS</small>
+                </div>
+                <a href="{% url 'dashboard:lista_pedidos' %}"
+                   class="list-group-item list-group-item-action {% if 'pedido' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-receipt me-2"></i> Pedidos
+                </a>
+                <a href="{% url 'dashboard:lista_reservas' %}"
+                   class="list-group-item list-group-item-action {% if 'reserva' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-calendar-alt me-2"></i> Reservas
+                </a>
+                <div class="px-3 mt-3 mb-2">
+                    <small class="text-muted"><i class="fas fa-cog me-1"></i> CONFIGURACIÓN</small>
+                </div>
+                <a href="{% url 'dashboard:configuracion_restaurante' %}"
+                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'configuracion_restaurante' %}active{% endif %}">
+                    <i class="fas fa-sliders-h me-2"></i> Configuración
+                </a>
+                <a href="{% url 'dashboard:ver_qr' %}"
+                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'ver_qr' %}active{% endif %}">
+                    <i class="fas fa-qrcode me-2"></i> Código QR
+                </a>
+                <a href="{% url 'dashboard:estadisticas' %}"
+                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'estadisticas' %}active{% endif %}">
+                    <i class="fas fa-chart-bar me-2"></i> Estadísticas
+                </a>
+                <hr class="my-2 bg-secondary">
+                <a href="{% url 'home' %}" target="_blank"
+                   class="list-group-item list-group-item-action text-warning">
+                    <i class="fas fa-external-link-alt me-2"></i> Ver Sitio Público
+                </a>
+                <a href="{% url 'logout' %}"
+                   class="list-group-item list-group-item-action text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                </a>
+            </div>
+            <div class="p-3 text-center text-muted small">
+                <hr class="bg-secondary">
+                <i class="fas fa-copyright me-1"></i> {% now "Y" %} Carta Virtual Cuba<br>
+                <span class="small">v1.0.0</span>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light rounded-3">
+                <div class="container-fluid">
+                    <button class="btn btn-dark" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-light position-relative" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                                <div class="text-end me-2">
+                                    <div class="fw-bold small">{{ user.username }}</div>
+                                    <div class="small text-muted">{{ user.restaurante.nombre|truncatechars:15 }}</div>
+                                </div>
+                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'dashboard:mi_restaurante' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:configuracion_restaurante' %}"><i class="fas fa-cog me-2"></i> Configuración</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid py-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 fw-bold">{% block page_title %}Dashboard{% endblock %}</h4>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+                                {% block breadcrumb %}{% endblock %}
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>{% block page_actions %}{% endblock %}</div>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CDNs externos JS -->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+
+        <script src="{% static 'js/dashboard.js' %}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const menuToggle = document.getElementById('menu-toggle');
+                const sidebar = document.getElementById('sidebar-wrapper');
+                if (menuToggle) {
+                    menuToggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        sidebar.classList.toggle('toggled');
+                    });
+                }
+            });
+        </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,224 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dashboard - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+        </h1>
+        <div class="text-muted">
+            <i class="bi bi-calendar me-1"></i>
+            {{ fecha_actual|date:"l, d F Y" }}
+        </div>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Pedidos Hoy
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pedidos_hoy }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cart-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Platos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_platos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-egg-fried fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Pedidos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_pedidos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Visitas QR
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ restaurante.visitas_qr }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-qr-code fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pedidos recientes -->
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-clock-history me-2"></i> Pedidos Recientes
+                    </h6>
+                    <a href="{% url 'dashboard:lista_pedidos' %}" class="btn btn-sm btn-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if pedidos_recientes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Cliente</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                        <th>Hora</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pedido in pedidos_recientes %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'dashboard:detalle_pedido' pedido.id %}"
+                                               class="text-decoration-none">
+                                                {{ pedido.codigo }}
+                                            </a>
+                                        </td>
+                                        <td>{{ pedido.nombre_cliente }}</td>
+                                        <td>${{ pedido.total }}</td>
+                                        <td>
+                                            <span class="badge
+                                                {% if pedido.estado == 'pendiente' %}bg-warning
+                                                {% elif pedido.estado == 'confirmado' %}bg-info
+                                                {% elif pedido.estado == 'preparando' %}bg-primary
+                                                {% elif pedido.estado == 'listo' %}bg-success
+                                                {% elif pedido.estado == 'entregado' %}bg-secondary
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ pedido.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ pedido.fecha_creacion|time:"H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-cart-x display-4 text-muted"></i>
+                            <p class="text-muted mt-3">No hay pedidos recientes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Platos populares -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-star me-2"></i> Platos Populares
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if platos_populares %}
+                        <div class="list-group list-group-flush">
+                            {% for plato in platos_populares %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ plato.nombre }}</h6>
+                                    <small class="text-muted">{{ plato.categoria.nombre }}</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ plato.veces_pedido }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-egg display-4 text-muted"></i>
+                            <p class="text-muted mt-3">No hay datos de platos</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-lightning me-2"></i> Acciones Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{% url 'dashboard:crear_plato' %}" class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-plus-circle me-1"></i> Nuevo Plato
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <!-- <a href="{% url 'dashboard:qr' %}" class="btn btn-info w-100 mb-2"> -->
+                            <a href="#" class="btn btn-info w-100 mb-2" onclick="alert('Función QR en desarrollo');">
+                                <i class="bi bi-qr-code me-1"></i> Ver QR
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'dashboard:configuracion_restaurante' %}" class="btn btn-warning w-100">
+                                <i class="bi bi-gear me-1"></i> Configuración
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'dashboard:estadisticas' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-graph-up me-1"></i> Estadísticas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

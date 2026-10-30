@@ -1,0 +1,289 @@
+{% extends 'base_publica.html' %}
+{% load static %}
+
+{% block title %}Reservar Mesa - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="bi bi-calendar-check"></i> Reservar Mesa
+                </h1>
+                <p class="lead">en {{ restaurante.nombre }}</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" id="reservaForm" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <!-- Información Personal -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="mb-3 border-bottom pb-2">
+                                    <i class="bi bi-person-circle"></i> Tus Datos
+                                </h5>
+
+                                <div class="mb-3">
+                                    <label for="id_nombre_cliente" class="form-label fw-semibold">
+                                        Nombre Completo *
+                                    </label>
+                                    <input type="text" name="nombre_cliente" id="id_nombre_cliente"
+                                           class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa tu nombre.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_telefono" class="form-label fw-semibold">
+                                        Teléfono *
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-phone"></i>
+                                        </span>
+                                        <input type="text" name="telefono" id="id_telefono"
+                                               class="form-control" required>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa tu teléfono.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_email" class="form-label fw-semibold">
+                                        Email (opcional)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-envelope"></i>
+                                        </span>
+                                        <input type="email" name="email" id="id_email"
+                                               class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_personas" class="form-label fw-semibold">
+                                        Número de Personas *
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-people"></i>
+                                        </span>
+                                        <input type="number" name="personas" id="id_personas"
+                                               class="form-control" min="1" max="20" value="2" required>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa el número de personas.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detalles de la Reserva -->
+                            <div class="col-md-6 mb-4">
+                                <h5 class="mb-3 border-bottom pb-2">
+                                    <i class="bi bi-clock"></i> Detalles de la Reserva
+                                </h5>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_fecha" class="form-label fw-semibold">
+                                            Fecha *
+                                        </label>
+                                        <input type="date" name="fecha" id="id_fecha"
+                                               class="form-control" required>
+                                        <div class="invalid-feedback">
+                                            Por favor selecciona una fecha.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_hora" class="form-label fw-semibold">
+                                            Hora *
+                                        </label>
+                                        <input type="time" name="hora" id="id_hora"
+                                               class="form-control" min="12:00" max="23:00" required>
+                                        <div class="invalid-feedback">
+                                            Por favor selecciona una hora.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_duracion" class="form-label fw-semibold">
+                                        Duración Estimada
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-hourglass"></i>
+                                        </span>
+                                        <input type="number" name="duracion" id="id_duracion"
+                                               class="form-control" value="90" min="30" max="240">
+                                        <span class="input-group-text">minutos</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_mesa_preferida" class="form-label fw-semibold">
+                                        Mesa Preferida (opcional)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-table"></i>
+                                        </span>
+                                        <input type="text" name="mesa_preferida" id="id_mesa_preferida"
+                                               class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_notas" class="form-label fw-semibold">
+                                        Notas Especiales
+                                    </label>
+                                    <textarea name="notas" id="id_notas"
+                                              class="form-control" rows="2"></textarea>
+                                    <small class="text-muted">
+                                        Ej: Alergias, celebración especial, etc.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Términos -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terminos" required>
+                            <label class="form-check-label" for="terminos">
+                                Acepto que el restaurante se pondrá en contacto para confirmar la reserva.
+                            </label>
+                            <div class="invalid-feedback">
+                                Debes aceptar los términos.
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}"
+                               class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-check-circle"></i>
+                                <span id="submitText">Confirmar Reserva</span>
+                                <span class="spinner-border spinner-border-sm d-none" id="submitSpinner"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información del Restaurante -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-info-circle text-primary"></i> Información Importante</h6>
+                            <ul class="mb-0">
+                                <li>La reserva se confirmará por teléfono.</li>
+                                <li>Por favor, llegue 10 minutos antes.</li>
+                                <li>Para grupos mayores a 10 personas, llame al restaurante.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-telephone text-primary"></i> Contacto</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-phone me-2"></i>{{ restaurante.telefono }}<br>
+                                <i class="bi bi-clock me-2"></i>Abierto: 12:00 - 23:00
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('reservaForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const terminos = document.getElementById('terminos');
+
+    // Configurar fecha mínima (hoy)
+    const fechaInput = document.getElementById('id_fecha');
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.min = hoy;
+
+    // Configurar fecha máxima (30 días)
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    fechaInput.max = maxDate.toISOString().split('T')[0];
+
+    // Configurar hora
+    const horaInput = document.getElementById('id_hora');
+    horaInput.min = '12:00';
+    horaInput.max = '23:00';
+
+    // Validación del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        let isValid = true;
+
+        // Validar campos requeridos
+        const requiredFields = [
+            'nombre_cliente', 'telefono', 'personas', 'fecha', 'hora'
+        ];
+
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(`id_${fieldId}`);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+            }
+        });
+
+        // Validar términos
+        if (!terminos.checked) {
+            terminos.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            terminos.classList.remove('is-invalid');
+        }
+
+        if (isValid) {
+            submitText.classList.add('d-none');
+            submitSpinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+            this.submit();
+        }
+    });
+
+    // Quitar validación al escribir
+    form.querySelectorAll('input, textarea, select').forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+
+    terminos.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+    });
+});
+</script>
+{% endblock %}

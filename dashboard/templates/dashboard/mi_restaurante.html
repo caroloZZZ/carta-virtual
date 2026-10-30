@@ -1,0 +1,147 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Mi Restaurante - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Mi Restaurante{% endblock %}
+{% block page_subtitle %}Información y configuración de tu negocio{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mi Restaurante</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-store me-2"></i>Información del Restaurante
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Logo actual -->
+                    {% if restaurante.logo %}
+                        <div class="text-center mb-4">
+                            <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}"
+                                 class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nombre del Restaurante</label>
+                            <input type="text" class="form-control" name="nombre" value="{{ restaurante.nombre }}" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tipo de Negocio</label>
+                            <select class="form-select" name="tipo">
+                                <option value="restaurante" {% if restaurante.tipo == 'restaurante' %}selected{% endif %}>Restaurante</option>
+                                <option value="cafeteria" {% if restaurante.tipo == 'cafeteria' %}selected{% endif %}>Cafetería</option>
+                                <option value="paladar" {% if restaurante.tipo == 'paladar' %}selected{% endif %}>Paladar</option>
+                                <option value="bar" {% if restaurante.tipo == 'bar' %}selected{% endif %}>Bar</option>
+                                <option value="pizzeria" {% if restaurante.tipo == 'pizzeria' %}selected{% endif %}>Pizzería</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3">{{ restaurante.descripcion }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dirección</label>
+                        <input type="text" class="form-control" name="direccion" value="{{ restaurante.direccion }}" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono" value="{{ restaurante.telefono }}" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" class="form-control" name="email" value="{{ restaurante.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Logo</label>
+                        <input type="file" class="form-control" name="logo" accept="image/*">
+                        <div class="form-text">Tamaño máximo: 2MB. Formatos: JPG, PNG.</div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="mostrar_precios" id="mostrar_precios"
+                                       {% if restaurante.mostrar_precios %}checked{% endif %}>
+                                <label class="form-check-label" for="mostrar_precios">Mostrar precios en la carta</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="acepta_pedidos" id="acepta_pedidos"
+                                       {% if restaurante.acepta_pedidos %}checked{% endif %}>
+                                <label class="form-check-label" for="acepta_pedidos">Aceptar pedidos online</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="acepta_reservas" id="acepta_reservas"
+                                       {% if restaurante.acepta_reservas %}checked{% endif %}>
+                                <label class="form-check-label" for="acepta_reservas">Aceptar reservas</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="activo" id="activo"
+                                       {% if restaurante.activo %}checked{% endif %}>
+                                <label class="form-check-label" for="activo">Restaurante activo</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información de la Cuenta
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Usuario:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Fecha de registro:</strong> {{ restaurante.fecha_registro|date:"d/m/Y" }}</p>
+                        <p><strong>Última actualización:</strong> {{ restaurante.ultima_actualizacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,342 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Notificaciones - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Centro de Notificaciones{% endblock %}
+{% block page_subtitle %}Mantente al día con todas las actividades{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Notificaciones</li>
+{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <button class="btn btn-outline-secondary" onclick="marcarTodasLeidas()">
+        <i class="fas fa-check-double me-2"></i>Marcar todas como leídas
+    </button>
+    <button class="btn btn-outline-danger" onclick="limpiarTodas()">
+        <i class="fas fa-trash me-2"></i>Limpiar todo
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filtros de notificaciones -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-primary active" onclick="filtrarNotificaciones('todas')" id="filtroTodas">
+                        Todas
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="filtrarNotificaciones('no_leidas')" id="filtroNoLeidas">
+                        No leídas
+                    </button>
+                    <button class="btn btn-outline-success" onclick="filtrarNotificaciones('leidas')" id="filtroLeidas">
+                        Leídas
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="tipoNotificacion" onchange="filtrarPorTipo()">
+                    <option value="">Todos los tipos</option>
+                    <option value="pedido">Pedidos</option>
+                    <option value="reserva">Reservas</option>
+                    <option value="pago">Pagos</option>
+                    <option value="sistema">Sistema</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de notificaciones -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-bell me-2 text-primary"></i>Centro de Notificaciones
+            {% if no_leidas_count > 0 %}
+                <span class="badge bg-danger ms-2">{{ no_leidas_count }} nuevas</span>
+            {% endif %}
+        </h5>
+        <div class="text-muted small">
+            Última actualización: <span id="ultimaActualizacion">{% now "H:i:s" %}</span>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if notificaciones %}
+            <div class="list-group" id="notificacionesLista">
+                {% for notif in notificaciones %}
+                    <div class="list-group-item list-group-item-action notificacion-item
+                                {% if not notif.leida %}list-group-item-warning{% endif %}"
+                         data-id="{{ notif.id }}"
+                         data-leida="{{ notif.leida|lower }}"
+                         data-tipo="{{ notif.tipo }}"
+                         data-fecha="{{ notif.fecha|date:'Y-m-d H:i:s' }}">
+
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div class="d-flex">
+                                <!-- Icono según tipo -->
+                                <div class="me-3">
+                                    {% if notif.tipo == 'pedido' %}
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                                            <i class="fas fa-shopping-cart text-primary"></i>
+                                        </div>
+                                    {% elif notif.tipo == 'reserva' %}
+                                        <div class="bg-success bg-opacity-10 p-2 rounded-circle">
+                                            <i class="fas fa-calendar-check text-success"></i>
+                                        </div>
+                                    {% elif notif.tipo == 'pago' %}
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-circle">
+                                            <i class="fas fa-credit-card text-info"></i>
+                                        </div>
+                                    {% elif notif.tipo == 'sistema' %}
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-circle">
+                                            <i class="fas fa-cog text-warning"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Contenido -->
+                                <div>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <strong>{{ notif.titulo }}</strong>
+                                        {% if not notif.leida %}
+                                            <span class="badge bg-danger ms-2">Nuevo</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-1">{{ notif.mensaje }}</p>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock me-1"></i>
+                                        {{ notif.fecha|timesince }} atrás
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Acciones -->
+                            <div class="btn-group btn-group-sm">
+                                {% if not notif.leida %}
+                                    <button class="btn btn-outline-primary" onclick="marcarLeida({{ notif.id }})">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                {% endif %}
+                                <button class="btn btn-outline-danger" onclick="eliminarNotificacion({{ notif.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Enlace relacionado (si existe) -->
+                        {% if notif.enlace %}
+                            <div class="mt-2 ms-5">
+                                <a href="{{ notif.enlace }}" class="small">
+                                    <i class="fas fa-arrow-right me-1"></i>Ver detalles
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                <h5>No hay notificaciones</h5>
+                <p class="text-muted">Las notificaciones aparecerán aquí cuando haya actividad</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Notificaciones en tiempo real (simuladas) -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white">
+            <i class="fas fa-bell me-2"></i>
+            <strong class="me-auto">Nueva Notificación</strong>
+            <small>ahora</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            <!-- Mensaje dinámico -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let filtroActual = 'todas';
+let tipoActual = '';
+
+// Filtrar notificaciones
+function filtrarNotificaciones(filtro) {
+    filtroActual = filtro;
+
+    // Actualizar botones
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`filtro${filtro.charAt(0).toUpperCase() + filtro.slice(1)}`).classList.add('active');
+
+    aplicarFiltros();
+}
+
+function filtrarPorTipo() {
+    tipoActual = document.getElementById('tipoNotificacion').value;
+    aplicarFiltros();
+}
+
+function aplicarFiltros() {
+    const items = document.querySelectorAll('.notificacion-item');
+
+    items.forEach(item => {
+        let mostrar = true;
+
+        // Filtrar por leídas/no leídas
+        if (filtroActual === 'no_leidas' && item.dataset.leida === 'true') {
+            mostrar = false;
+        } else if (filtroActual === 'leidas' && item.dataset.leida === 'false') {
+            mostrar = false;
+        }
+
+        // Filtrar por tipo
+        if (mostrar && tipoActual && item.dataset.tipo !== tipoActual) {
+            mostrar = false;
+        }
+
+        item.style.display = mostrar ? '' : 'none';
+    });
+}
+
+// Marcar como leída
+function marcarLeida(id) {
+    fetch(`/api/notificaciones/${id}/marcar-leida/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.querySelector(`.notificacion-item[data-id="${id}"]`);
+            item.classList.remove('list-group-item-warning');
+            item.dataset.leida = 'true';
+
+            // Actualizar contador
+            actualizarContadorNoLeidas();
+        }
+    });
+}
+
+// Marcar todas como leídas
+function marcarTodasLeidas() {
+    if (confirm('¿Marcar todas las notificaciones como leídas?')) {
+        fetch('/api/notificaciones/marcar-todas-leidas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Eliminar notificación
+function eliminarNotificacion(id) {
+    if (confirm('¿Eliminar esta notificación?')) {
+        fetch(`/api/notificaciones/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                const item = document.querySelector(`.notificacion-item[data-id="${id}"]`);
+                item.remove();
+                actualizarContadorNoLeidas();
+            }
+        });
+    }
+}
+
+// Limpiar todas
+function limpiarTodas() {
+    if (confirm('¿Eliminar todas las notificaciones?')) {
+        fetch('/api/notificaciones/limpiar-todas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Actualizar contador de no leídas
+function actualizarContadorNoLeidas() {
+    const noLeidas = document.querySelectorAll('.notificacion-item[data-leida="false"]').length;
+    const badge = document.querySelector('.badge.bg-danger');
+
+    if (badge) {
+        if (noLeidas > 0) {
+            badge.textContent = `${noLeidas} nuevas`;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Simular notificaciones en tiempo real
+function simularNotificacionReal() {
+    // Esta función se llamaría desde WebSocket en producción
+    const tipos = ['pedido', 'reserva', 'pago'];
+    const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+
+    let mensaje = '';
+    let titulo = '';
+
+    if (tipo === 'pedido') {
+        titulo = 'Nuevo pedido';
+        mensaje = 'Se ha recibido un nuevo pedido #P' + Math.floor(Math.random() * 1000);
+    } else if (tipo === 'reserva') {
+        titulo = 'Nueva reserva';
+        mensaje = 'Un cliente ha solicitado una reserva';
+    } else if (tipo === 'pago') {
+        titulo = 'Pago confirmado';
+        mensaje = 'Se ha confirmado un pago';
+    }
+
+    document.getElementById('toastMessage').innerHTML = `
+        <strong>${titulo}</strong><br>
+        <small>${mensaje}</small>
+    `;
+
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    toast.show();
+}
+
+// Simular cada 30 segundos
+setInterval(simularNotificacionReal, 30000);
+
+// Actualizar timestamp cada minuto
+setInterval(() => {
+    document.getElementById('ultimaActualizacion').textContent =
+        new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}, 60000);
+</script>
+{% endblock %}

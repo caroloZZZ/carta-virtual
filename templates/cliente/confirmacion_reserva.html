@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reserva confirmada - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4 text-center">
+                <div class="card-header bg-success text-white py-4 rounded-top-4">
+                    <i class="fas fa-check-circle fa-4x mb-3"></i>
+                    <h2>¡Reserva solicitada!</h2>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead">Hemos recibido tu solicitud de reserva.</p>
+                    <p><strong>Restaurante:</strong> {{ restaurante.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ reserva.fecha|date:"d/m/Y" }} a las {{ reserva.hora|time:"H:i" }}</p>
+                    <p><strong>Personas:</strong> {{ reserva.personas }}</p>
+                    <p class="text-muted">Te contactaremos para confirmar la reserva.</p>
+                    <hr>
+                    <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-primary btn-lg rounded-pill">
+                        <i class="fas fa-utensils me-2"></i>Ver carta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

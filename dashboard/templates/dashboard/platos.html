@@ -1,0 +1,209 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Platos - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Gestión de Platos{% endblock %}
+{% block page_subtitle %}Administra todos los platos de tu menú{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Platos</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'dashboard:crear_plato' %}" class="btn btn-primary">
+    <i class="fas fa-plus-circle me-2"></i>Nuevo Plato
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Categoría</label>
+                <select class="form-select" id="filterCategoria">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="filterEstado">
+                    <option value="">Todos</option>
+                    <option value="disponible">Disponibles</option>
+                    <option value="no_disponible">No disponibles</option>
+                    <option value="destacado">Destacados</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Búsqueda</label>
+                <input type="text" class="form-control" id="searchPlato" placeholder="Buscar plato...">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-secondary w-100" onclick="limpiarFiltros()">
+                    <i class="fas fa-undo me-2"></i>Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de platos -->
+<div class="row" id="platosContainer">
+    {% for plato in platos %}
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-4 plato-item"
+             data-categoria="{{ plato.categoria.id }}"
+             data-disponible="{{ plato.disponible }}"
+             data-destacado="{{ plato.destacado }}">
+            <div class="card h-100">
+                {% if plato.imagen %}
+                    <img src="{{ plato.imagen.url }}" class="card-img-top" alt="{{ plato.nombre }}"
+                         style="height: 160px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                         style="height: 160px;">
+                        <i class="fas fa-utensils fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title mb-0">{{ plato.nombre|truncatechars:25 }}</h6>
+                        <span class="badge bg-primary">${{ plato.precio }}</span>
+                    </div>
+
+                    <p class="card-text small text-muted mb-2">
+                        {{ plato.descripcion|truncatechars:60|default:"Sin descripción" }}
+                    </p>
+
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">{{ plato.categoria.nombre }}</span>
+                        {% if plato.destacado %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Destacado</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-2">
+                        {% if plato.es_vegetariano %}
+                            <span class="badge bg-success"><i class="fas fa-leaf me-1"></i>Vegetariano</span>
+                        {% endif %}
+                        {% if plato.es_picante %}
+                            <span class="badge bg-danger"><i class="fas fa-fire me-1"></i>Picante</span>
+                        {% endif %}
+                        {% if plato.contiene_gluten %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-wheat-alt me-1"></i>Gluten</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if plato.disponible %}
+                                <span class="badge bg-success">Disponible</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No disponible</span>
+                            {% endif %}
+                            <small class="text-muted ms-2">{{ plato.veces_pedido }} pedidos</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'dashboard:editar_plato' plato.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarPlato({{ plato.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+                <h5>No hay platos creados</h5>
+                <p class="text-muted">Comienza agregando tu primer plato</p>
+                <a href="{% url 'dashboard:crear_plato' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Crear Plato
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filtros dinámicos
+document.getElementById('filterCategoria').addEventListener('change', filtrarPlatos);
+document.getElementById('filterEstado').addEventListener('change', filtrarPlatos);
+document.getElementById('searchPlato').addEventListener('keyup', filtrarPlatos);
+
+function filtrarPlatos() {
+    const categoria = document.getElementById('filterCategoria').value;
+    const estado = document.getElementById('filterEstado').value;
+    const search = document.getElementById('searchPlato').value.toLowerCase();
+
+    const platos = document.querySelectorAll('.plato-item');
+
+    platos.forEach(plato => {
+        let mostrar = true;
+
+        // Filtrar por categoría
+        if (categoria && plato.dataset.categoria !== categoria) {
+            mostrar = false;
+        }
+
+        // Filtrar por estado
+        if (estado && mostrar) {
+            if (estado === 'disponible' && plato.dataset.disponible !== 'True') {
+                mostrar = false;
+            } else if (estado === 'no_disponible' && plato.dataset.disponible === 'True') {
+                mostrar = false;
+            } else if (estado === 'destacado' && plato.dataset.destacado !== 'True') {
+                mostrar = false;
+            }
+        }
+
+        // Filtrar por búsqueda
+        if (search && mostrar) {
+            const nombre = plato.querySelector('.card-title').textContent.toLowerCase();
+            if (!nombre.includes(search)) {
+                mostrar = false;
+            }
+        }
+
+        plato.style.display = mostrar ? 'block' : 'none';
+    });
+}
+
+function limpiarFiltros() {
+    document.getElementById('filterCategoria').value = '';
+    document.getElementById('filterEstado').value = '';
+    document.getElementById('searchPlato').value = '';
+    filtrarPlatos();
+}
+
+function eliminarPlato(id) {
+    if (confirm('¿Estás seguro de eliminar este plato?')) {
+        fetch(`/dashboard/platos/eliminar/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al eliminar el plato');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

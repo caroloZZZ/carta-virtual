@@ -1,0 +1,399 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Clientes - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Gestión de Clientes{% endblock %}
+{% block page_subtitle %}Historial y estadísticas de tus clientes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Clientes</li>
+{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" onclick="exportarClientes()">
+    <i class="fas fa-download me-2"></i>Exportar Lista
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- KPIs de clientes -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-primary border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Total Clientes</div>
+                        <div class="h3 mb-0 fw-bold">{{ total_clientes }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-users text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-success border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Clientes Nuevos (Mes)</div>
+                        <div class="h3 mb-0 fw-bold">{{ clientes_nuevos_mes }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-user-plus text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-info border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Clientes Frecuentes</div>
+                        <div class="h3 mb-0 fw-bold">{{ clientes_frecuentes }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-star text-info fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-warning border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Ticket Promedio por Cliente</div>
+                        <div class="h3 mb-0 fw-bold">${{ ticket_promedio_cliente|floatformat:2 }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-chart-line text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Búsqueda y filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="buscarCliente"
+                           placeholder="Buscar por nombre o teléfono...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filtroFrecuencia">
+                    <option value="">Todos los clientes</option>
+                    <option value="frecuente">Clientes frecuentes (5+ pedidos)</option>
+                    <option value="regular">Clientes regulares (2-4 pedidos)</option>
+                    <option value="nuevo">Clientes nuevos (1 pedido)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="ordenarPor">
+                    <option value="pedidos_desc">Más pedidos primero</option>
+                    <option value="pedidos_asc">Menos pedidos primero</option>
+                    <option value="gasto_desc">Mayor gasto primero</option>
+                    <option value="gasto_asc">Menor gasto primero</option>
+                    <option value="nombre_asc">Nombre A-Z</option>
+                    <option value="nombre_desc">Nombre Z-A</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary w-100" onclick="limpiarFiltros()">
+                    <i class="fas fa-undo me-2"></i>Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de clientes -->
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="fas fa-address-card me-2 text-primary"></i>Lista de Clientes
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if clientes %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="clientesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Contacto</th>
+                            <th class="text-center">Pedidos</th>
+                            <th class="text-end">Total Gastado</th>
+                            <th class="text-center">Ticket Prom.</th>
+                            <th>Último Pedido</th>
+                            <th class="text-center">Frecuencia</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente in clientes %}
+                            <tr class="cliente-row"
+                                data-nombre="{{ cliente.nombre|lower }}"
+                                data-telefono="{{ cliente.telefono }}"
+                                data-pedidos="{{ cliente.total_pedidos }}"
+                                data-gasto="{{ cliente.total_gastado }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary text-white me-3">
+                                            {{ cliente.nombre|first|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ cliente.nombre }}</strong>
+                                            {% if cliente.es_frecuente %}
+                                                <span class="badge bg-warning text-dark ms-2">
+                                                    <i class="fas fa-crown me-1"></i>VIP
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if cliente.telefono %}
+                                        <a href="tel:{{ cliente.telefono }}">{{ cliente.telefono }}</a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">{{ cliente.total_pedidos }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <strong>${{ cliente.total_gastado|floatformat:2 }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    ${{ cliente.ticket_promedio|floatformat:2 }}
+                                </td>
+                                <td>
+                                    <small>{{ cliente.ultimo_pedido|date:"d/m/Y" }}</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if cliente.total_pedidos >= 5 %}
+                                        <span class="badge bg-success">Frecuente</span>
+                                    {% elif cliente.total_pedidos >= 2 %}
+                                        <span class="badge bg-info">Regular</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Nuevo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="verCliente({{ cliente.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success"
+                                            onclick="enviarMensaje({{ cliente.id }})">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5>No hay clientes registrados</h5>
+                <p class="text-muted">Los clientes aparecerán aquí cuando realicen su primer pedido</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Detalle Cliente -->
+<div class="modal fade" id="clienteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-circle me-2"></i>Detalle del Cliente
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="clienteDetalle">
+                <!-- Contenido cargado vía AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filtros en tiempo real
+document.getElementById('buscarCliente').addEventListener('keyup', filtrarClientes);
+document.getElementById('filtroFrecuencia').addEventListener('change', filtrarClientes);
+document.getElementById('ordenarPor').addEventListener('change', ordenarClientes);
+
+function filtrarClientes() {
+    const busqueda = document.getElementById('buscarCliente').value.toLowerCase();
+    const frecuencia = document.getElementById('filtroFrecuencia').value;
+
+    const filas = document.querySelectorAll('.cliente-row');
+
+    filas.forEach(fila => {
+        let mostrar = true;
+
+        // Búsqueda por nombre o teléfono
+        if (busqueda) {
+            const nombre = fila.dataset.nombre;
+            const telefono = fila.dataset.telefono || '';
+            if (!nombre.includes(busqueda) && !telefono.includes(busqueda)) {
+                mostrar = false;
+            }
+        }
+
+        // Filtro por frecuencia
+        if (mostrar && frecuencia) {
+            const pedidos = parseInt(fila.dataset.pedidos);
+            if (frecuencia === 'frecuente' && pedidos < 5) mostrar = false;
+            if (frecuencia === 'regular' && (pedidos < 2 || pedidos > 4)) mostrar = false;
+            if (frecuencia === 'nuevo' && pedidos !== 1) mostrar = false;
+        }
+
+        fila.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function ordenarClientes() {
+    const orden = document.getElementById('ordenarPor').value;
+    const tbody = document.querySelector('#clientesTable tbody');
+    const filas = Array.from(document.querySelectorAll('.cliente-row'));
+
+    filas.sort((a, b) => {
+        switch(orden) {
+            case 'pedidos_desc':
+                return b.dataset.pedidos - a.dataset.pedidos;
+            case 'pedidos_asc':
+                return a.dataset.pedidos - b.dataset.pedidos;
+            case 'gasto_desc':
+                return b.dataset.gasto - a.dataset.gasto;
+            case 'gasto_asc':
+                return a.dataset.gasto - b.dataset.gasto;
+            case 'nombre_asc':
+                return a.dataset.nombre.localeCompare(b.dataset.nombre);
+            case 'nombre_desc':
+                return b.dataset.nombre.localeCompare(a.dataset.nombre);
+            default:
+                return 0;
+        }
+    });
+
+    // Reordenar filas
+    filas.forEach(fila => tbody.appendChild(fila));
+}
+
+function limpiarFiltros() {
+    document.getElementById('buscarCliente').value = '';
+    document.getElementById('filtroFrecuencia').value = '';
+    document.getElementById('ordenarPor').value = 'pedidos_desc';
+    filtrarClientes();
+    ordenarClientes();
+}
+
+function verCliente(id) {
+    fetch(`/api/clientes/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('clienteDetalle').innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="avatar-circle bg-primary text-white mx-auto mb-3"
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        ${data.nombre.charAt(0).toUpperCase()}
+                    </div>
+                    <h4>${data.nombre}</h4>
+                    <p class="text-muted">${data.telefono || 'Sin teléfono'}</p>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-4 text-center">
+                        <div class="bg-light p-3 rounded">
+                            <strong class="d-block h4">${data.total_pedidos}</strong>
+                            <small class="text-muted">Pedidos</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-light p-3 rounded">
+                            <strong class="d-block h4">$${data.total_gastado}</strong>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-light p-3 rounded">
+                            <strong class="d-block h4">$${data.ticket_promedio}</strong>
+                            <small class="text-muted">Promedio</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="mb-3">Últimos pedidos</h6>
+                <div class="list-group">
+                    ${data.ultimos_pedidos.map(pedido => `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <span>#${pedido.codigo}</span>
+                                <span>$${pedido.total}</span>
+                            </div>
+                            <small class="text-muted">${pedido.fecha}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            new bootstrap.Modal(document.getElementById('clienteModal')).show();
+        });
+}
+
+function enviarMensaje(id) {
+    // Implementar envío de mensajes (WhatsApp/SMS)
+    window.open(`https://wa.me/${id}`, '_blank');
+}
+
+function exportarClientes() {
+    window.location.href = '{% url "dashboard:exportar_clientes" %}';
+}
+</script>
+{% endblock %}

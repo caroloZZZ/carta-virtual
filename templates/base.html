@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Carta Virtual Cuba{% endblock %}</title>
+
+    <!-- CDNs externos -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+    <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
+
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <style>
+            :root {
+                --primary: #dc3545;
+                --primary-dark: #c82333;
+                --secondary: #ffc107;
+                --dark: #212529;
+                --light: #f8f9fa;
+            }
+            body {
+                font-family: 'Open Sans', sans-serif;
+                padding-top: 76px;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            main {
+                flex: 1;
+            }
+            .navbar-brand {
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 700;
+            }
+        </style>
+        {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    <i class="bi bi-qr-code-scan me-2"></i>
+                    Carta Virtual Cuba
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">
+                                <i class="bi bi-house"></i> Inicio
+                            </a>
+                        </li>
+                        {% if user.is_authenticated and user.restaurante %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i>
+                                    {{ user.username|truncatechars:20 }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if user.restaurante %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'dashboard:dashboard' %}">
+                                            <i class="bi bi-speedometer2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'dashboard:mi_restaurante' %}">
+                                            <i class="bi bi-shop"></i> Mi Restaurante
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% endif %}
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">
+                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-primary ms-2" href="{% url 'registro' %}">
+                                    <i class="bi bi-person-plus"></i> Registrarse
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer bg-dark text-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-qr-code-scan text-primary"></i> Carta Virtual Cuba</h5>
+                    <p class="text-muted">Sistema de menús digitales para restaurantes</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-muted mb-0">&copy; {% now "Y" %} Todos los derechos reservados</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CDNs externos JS -->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+        <script src="{% static 'js/main.js' %}"></script>
+        {# SW desactivado temporalmente para evitar problemas de caché en desarrollo #}
+        {# Se reactivará cuando el proyecto esté estable (fase PWA) #}
+
+    {# Bloque extra_js fuera de compress #}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

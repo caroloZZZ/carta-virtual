@@ -1,0 +1,25 @@
+# Entorno virtual
+venv/
+env/
+.venv/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos estáticos y media (se generan solos)
+/staticfiles/
+/media/
+
+# Variables de entorno (NUNCA subir contraseñas)
+.env
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

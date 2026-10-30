@@ -1,0 +1,97 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Reservas - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Gestión de Reservas{% endblock %}
+{% block page_subtitle %}Administra las reservas de tu restaurante{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Reservas</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'dashboard:crear_reserva' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>Nueva Reserva
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">Hoy</h5>
+                <h2>{{ reservas_hoy }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <h5 class="card-title">Pendientes</h5>
+                <h2>{{ reservas_pendientes }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="mb-0">Todas las Reservas</h5>
+            <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" onchange="window.location.href='?estado='+this.value">
+                    <option value="">Todos los estados</option>
+                    {% for codigo, label in estados %}
+                    <option value="{{ codigo }}" {% if request.GET.estado == codigo %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Personas</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td><strong>{{ reserva.codigo }}</strong></td>
+                        <td>{{ reserva.nombre_cliente }}</td>
+                        <td>{{ reserva.telefono }}</td>
+                        <td>{{ reserva.fecha|date:'d/m/Y' }}</td>
+                        <td>{{ reserva.hora|time:'H:i' }}</td>
+                        <td>{{ reserva.personas }}</td>
+                        <td>
+                            <span class="badge bg-{% if reserva.estado == 'confirmada' %}success{% elif reserva.estado == 'cancelada' %}danger{% elif reserva.estado == 'completada' %}info{% elif reserva.estado == 'no_show' %}secondary{% else %}warning{% endif %}">
+                                {{ reserva.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'dashboard:detalle_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">No hay reservas registradas</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

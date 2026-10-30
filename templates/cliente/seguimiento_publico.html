@@ -1,0 +1,217 @@
+{% extends 'base_publica.html' %}
+
+{% block title %}Seguimiento de Pedido - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-truck me-2"></i> Seguimiento de Pedido</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Información del pedido -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Pedido #{{ pedido.codigo }}</h5>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}
+                            </p>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-user me-1"></i>
+                                {{ pedido.nombre_cliente }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h2 class="mb-0">${{ pedido.total }}</h2>
+                            <span class="badge bg-{{ pedido.estado }} fs-6">
+                                {{ pedido.get_estado_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Progreso del pedido -->
+                    <div class="mb-5">
+                        <h5 class="mb-3">Progreso del Pedido</h5>
+                        <div class="progress-steps">
+                            {% with steps="pendiente,confirmado,preparando,listo,entregado" %}
+                                {% for step in steps.split %}
+                                    <div class="step {% if step == pedido.estado %}active{% endif %}">
+                                        <div class="step-icon">
+                                            {% if step == 'pendiente' %}
+                                                <i class="fas fa-clock"></i>
+                                            {% elif step == 'confirmado' %}
+                                                <i class="fas fa-check"></i>
+                                            {% elif step == 'preparando' %}
+                                                <i class="fas fa-utensils"></i>
+                                            {% elif step == 'listo' %}
+                                                <i class="fas fa-check-double"></i>
+                                            {% elif step == 'entregado' %}
+                                                <i class="fas fa-box"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="step-label">
+                                            {{ pedido.get_estado_display }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <!-- Detalles del pedido -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Detalles del Pedido</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in pedido.items.all %}
+                                    <tr>
+                                        <td>{{ item.plato.nombre }}</td>
+                                        <td>{{ item.cantidad }}</td>
+                                        <td>${{ item.precio_unitario }}</td>
+                                        <td>${{ item.subtotal }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-info-circle me-2"></i> Información Adicional</h6>
+                                    {% if pedido.mesa %}
+                                    <p class="mb-1"><strong>Mesa:</strong> {{ pedido.mesa }}</p>
+                                    {% endif %}
+                                    {% if pedido.notas %}
+                                    <p class="mb-1"><strong>Notas:</strong> {{ pedido.notas }}</p>
+                                    {% endif %}
+                                    <p class="mb-0"><strong>Método de pago:</strong> {{ pedido.get_metodo_pago_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-store me-2"></i> Información del Restaurante</h6>
+                                    <p class="mb-1"><strong>Nombre:</strong> {{ restaurante.nombre }}</p>
+                                    <p class="mb-1"><strong>Teléfono:</strong> {{ restaurante.telefono }}</p>
+                                    <p class="mb-0"><strong>Dirección:</strong> {{ restaurante.direccion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-primary">
+                            <i class="fas fa-utensils me-2"></i> Hacer Otro Pedido
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+
+    .step {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 1.25rem;
+    }
+
+    .step.active .step-icon {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-label {
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar el estado del pedido cada 10 segundos
+    setInterval(function() {
+        fetch("{% url 'clientes:estado_pedido_api' restaurante.qr_uuid pedido.id %}")
+            .then(response => response.json())
+            .then(data => {
+                // Actualizar el badge del estado
+                const badge = document.querySelector('.badge.bg-{{ pedido.estado }}');
+                if (badge) {
+                    badge.textContent = data.estado_display;
+                    badge.className = `badge bg-${data.estado} fs-6`;
+
+                    // Actualizar los pasos del progreso
+                    document.querySelectorAll('.step').forEach(step => {
+                        step.classList.remove('active');
+                    });
+
+                    const activeStep = document.querySelector(`.step[data-estado="${data.estado}"]`);
+                    if (activeStep) {
+                        activeStep.classList.add('active');
+                    }
+                }
+            })
+            .catch(error => console.error('Error actualizando estado:', error));
+    }, 10000);
+</script>
+{% endblock %}

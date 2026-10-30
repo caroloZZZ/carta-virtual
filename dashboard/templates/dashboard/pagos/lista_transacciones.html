@@ -1,0 +1,105 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Transacciones - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Transacciones{% endblock %}
+{% block page_subtitle %}Historial de transacciones y pagos{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Transacciones</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h6>Ingresos Hoy</h6>
+                <h3>${{ ingresos_hoy|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h6>Ingresos del Mes</h6>
+                <h3>${{ ingresos_mes|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h6>Transacciones Hoy</h6>
+                <h3>{{ transacciones_hoy_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="row g-2">
+            <div class="col-auto">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for codigo, label in estados %}
+                    <option value="{{ codigo }}" {% if request.GET.estado == codigo %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="metodo" class="form-select">
+                    <option value="">Todos los métodos</option>
+                    {% for codigo, label in metodos_pago %}
+                    <option value="{{ codigo }}" {% if request.GET.metodo == codigo %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <input type="date" name="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-2"></i>Filtrar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Pedido</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transacciones %}
+                    <tr>
+                        <td>{{ t.codigo_transaccion }}</td>
+                        <td>#{{ t.pedido.codigo }}</td>
+                        <td>${{ t.monto_total|floatformat:2 }}</td>
+                        <td>{{ t.get_metodo_pago_display }}</td>
+                        <td>{{ t.get_estado_display }}</td>
+                        <td>{{ t.creada_en|date:'d/m/Y H:i' }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-4">No hay transacciones</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

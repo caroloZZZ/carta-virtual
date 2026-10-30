@@ -1,0 +1,95 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}Editar Reserva{% endblock %}
+{% block page_subtitle %}{{ reserva.nombre_cliente }} - {{ reserva.codigo }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:lista_reservas' %}">Reservas</a></li>
+<li class="breadcrumb-item active">{{ reserva.codigo }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="{% url 'dashboard:guardar_reserva' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="reserva_id" value="{{ reserva.id }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" name="nombre_cliente" class="form-control" value="{{ reserva.nombre_cliente }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" value="{{ reserva.telefono }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ reserva.email }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Número de Personas</label>
+                            <input type="number" name="personas" class="form-control" min="1" value="{{ reserva.personas }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" value="{{ reserva.fecha|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora</label>
+                            <input type="time" name="hora" class="form-control" value="{{ reserva.hora|time:'H:i' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Mesa</label>
+                            <input type="text" name="mesa" class="form-control" value="{{ reserva.mesa }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" class="form-select">
+                                <option value="pendiente" {% if reserva.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="confirmada" {% if reserva.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+                                <option value="completada" {% if reserva.estado == 'completada' %}selected{% endif %}>Completada</option>
+                                <option value="cancelada" {% if reserva.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                                <option value="no_show" {% if reserva.estado == 'no_show' %}selected{% endif %}>No Show</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notas</label>
+                            <textarea name="notas" class="form-control" rows="3">{{ reserva.notas }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                            <a href="{% url 'dashboard:lista_reservas' %}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5>Información</h5></div>
+            <div class="card-body">
+                <dl>
+                    <dt>Código</dt>
+                    <dd>{{ reserva.codigo }}</dd>
+                    <dt>Creada</dt>
+                    <dd>{{ reserva.fecha_creacion|date:'d/m/Y H:i' }}</dd>
+                    {% if reserva.confirmado_en %}
+                    <dt>Confirmada</dt>
+                    <dd>{{ reserva.confirmado_en|date:'d/m/Y H:i' }} por {{ reserva.confirmada_por.get_full_name|default:reserva.confirmada_por.username }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Nueva Reserva - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Nueva Reserva{% endblock %}
+{% block page_subtitle %}Registra una nueva reserva en el sistema{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:lista_reservas' %}">Reservas</a></li>
+<li class="breadcrumb-item active">Nueva Reserva</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="{% url 'dashboard:guardar_reserva' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" name="nombre_cliente" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Número de Personas</label>
+                            <input type="number" name="personas" class="form-control" min="1" value="2" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" value="{{ fecha_hoy }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora</label>
+                            <input type="time" name="hora" class="form-control" value="{{ hora_ahora }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Mesa</label>
+                            <input type="text" name="mesa" class="form-control" placeholder="Ej: 5, Terraza-3">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notas</label>
+                            <textarea name="notas" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Reserva
+                            </button>
+                            <a href="{% url 'dashboard:lista_reservas' %}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

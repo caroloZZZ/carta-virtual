@@ -1,0 +1,35 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Transacción - {{ restaurante.nombre }}{% endblock %}
+{% block page_title %}Detalle de Transacción{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:pagos:lista_transacciones' %}">Transacciones</a></li>
+<li class="breadcrumb-item active">{{ transaccion.codigo_transaccion }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Código</dt>
+                    <dd class="col-sm-8">{{ transaccion.codigo_transaccion }}</dd>
+                    <dt class="col-sm-4">Pedido</dt>
+                    <dd class="col-sm-8">#{{ transaccion.pedido.codigo }}</dd>
+                    <dt class="col-sm-4">Monto Total</dt>
+                    <dd class="col-sm-8">${{ transaccion.monto_total|floatformat:2 }}</dd>
+                    <dt class="col-sm-4">Método de Pago</dt>
+                    <dd class="col-sm-8">{{ transaccion.get_metodo_pago_display }}</dd>
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8">{{ transaccion.get_estado_display }}</dd>
+                    <dt class="col-sm-4">Creada</dt>
+                    <dd class="col-sm-8">{{ transaccion.creada_en|date:'d/m/Y H:i:s' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

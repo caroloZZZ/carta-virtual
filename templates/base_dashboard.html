@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard de Carta Virtual Cuba">
+    <title>{% block title %}Dashboard{% endblock %} - Carta Virtual Cuba</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+    <!-- CDNs externos (NO se comprimen) -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+
+        <!-- Custom CSS locales -->
+        <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        {% block extra_css %}{% endblock %}
+</head>
+<body id="page-top">
+    <div id="wrapper">
+        {% include 'includes/sidebar_dashboard.html' %}
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'includes/navbar_dashboard.html' %}
+                <div class="container-fluid">
+                    {% include 'includes/messages.html' %}
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+            {% include 'includes/footer_dashboard.html' %}
+        </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- CDNs externos JS -->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+        <script src="{% static 'js/dashboard.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
+        <script>
+            // Sidebar Toggle
+            document.getElementById('sidebarToggle').addEventListener('click', function() {
+                document.getElementById('wrapper').classList.toggle('toggled');
+            });
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+                alerts.forEach(function(alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        </script>
+
+    {# El bloque extra_js ahora está FUERA de compress para permitir scripts externos #}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

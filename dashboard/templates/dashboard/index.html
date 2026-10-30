@@ -1,0 +1,233 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Bienvenido de nuevo, {{ user.username }}{% endblock %}
+
+{% block content %}
+<!-- Tarjetas de estadísticas -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-primary border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Pedidos Hoy</div>
+                        <div class="h3 mb-0 fw-bold">{{ pedidos_hoy|default:"0" }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-shopping-cart text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:lista_pedidos' %}" class="small text-decoration-none">
+                        Ver detalles <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-success border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Ingresos Hoy</div>
+                        <div class="h3 mb-0 fw-bold">${{ ingresos_hoy|floatformat:2|default:"0.00" }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-dollar-sign text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:estadisticas' %}" class="small text-decoration-none">
+                        Ver estadísticas <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-info border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Platos Activos</div>
+                        <div class="h3 mb-0 fw-bold">{{ platos_activos|default:"0" }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-utensils text-info fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:platos' %}" class="small text-decoration-none">
+                        Gestionar menú <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-start border-warning border-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="small text-muted mb-1">Escaneos QR</div>
+                        <div class="h3 mb-0 fw-bold">{{ escaneos_qr|default:"0" }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-qrcode text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:ver_qr' %}" class="small text-decoration-none">
+                        Ver QR <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2 text-primary"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'dashboard:crear_plato' %}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>
+                            <span>Nuevo Plato</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'dashboard:lista_categorias' %}" class="btn btn-outline-success w-100 py-3">
+                            <i class="fas fa-list fa-2x mb-2 d-block"></i>
+                            <span>Nueva Categoría</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'dashboard:configuracion_restaurante' %}" class="btn btn-outline-info w-100 py-3">
+                            <i class="fas fa-cog fa-2x mb-2 d-block"></i>
+                            <span>Configuración</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'dashboard:ver_qr' %}" class="btn btn-outline-warning w-100 py-3">
+                            <i class="fas fa-qrcode fa-2x mb-2 d-block"></i>
+                            <span>Ver QR</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pedidos recientes y platos populares -->
+<div class="row g-4">
+    <!-- Pedidos recientes -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2 text-primary"></i>Pedidos Recientes
+                </h5>
+                <a href="{% url 'dashboard:lista_pedidos' %}" class="btn btn-sm btn-primary">Ver todos</a>
+            </div>
+            <div class="card-body">
+                {% if pedidos_recientes %}
+                    <div class="list-group list-group-flush">
+                        {% for pedido in pedidos_recientes %}
+                            <a href="{% url 'dashboard:detalle_pedido' pedido.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>#{{ pedido.codigo }}</strong>
+                                    <small class="d-block text-muted">{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div>
+                                    <span class="badge
+                                        {% if pedido.estado == 'pendiente' %}bg-warning
+                                        {% elif pedido.estado == 'confirmado' %}bg-info
+                                        {% elif pedido.estado == 'preparando' %}bg-primary
+                                        {% elif pedido.estado == 'listo' %}bg-success
+                                        {% elif pedido.estado == 'entregado' %}bg-secondary
+                                        {% elif pedido.estado == 'cancelado' %}bg-danger
+                                        {% endif %}">
+                                        {{ pedido.get_estado_display }}
+                                    </span>
+                                    <span class="ms-3 fw-bold">${{ pedido.total|floatformat:2 }}</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay pedidos recientes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Platos populares -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2 text-warning"></i>Platos Más Populares
+                </h5>
+                <a href="{% url 'dashboard:platos' %}" class="btn btn-sm btn-primary">Ver todos</a>
+            </div>
+            <div class="card-body">
+                {% if platos_populares %}
+                    <div class="list-group list-group-flush">
+                        {% for plato in platos_populares %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ plato.plato__nombre }}</strong>
+                                    <small class="d-block text-muted">{{ plato.cantidad_vendida }} pedidos</small>
+                                </div>
+                                <span class="fw-bold text-success">+{{ plato.cantidad_vendida }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aún no hay platos populares</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Actualización automática de pedidos (cada 30 segundos)
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

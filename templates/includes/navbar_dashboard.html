@@ -1,0 +1,110 @@
+{% load static %}
+<!-- Topbar -->
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Topbar Navbar -->
+    <ul class="navbar-nav ml-auto">
+
+        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+        <li class="nav-item dropdown no-arrow d-sm-none">
+            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bi bi-search"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                aria-labelledby="searchDropdown">
+                <form class="form-inline mr-auto w-100 navbar-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small"
+                            placeholder="Buscar..." aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </li>
+
+        <!-- Nav Item - Alerts -->
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bi bi-bell"></i>
+                <span class="badge badge-danger badge-counter" id="alertCount">0</span>
+            </a>
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="alertsDropdown">
+                <h6 class="dropdown-header">
+                    Centro de Notificaciones
+                </h6>
+                <a class="dropdown-item text-center small text-gray-500" href="#">
+                    No hay notificaciones nuevas
+                </a>
+                <a class="dropdown-item text-center small text-gray-500" href="{% url 'dashboard:notificaciones' %}">
+                    Ver todas
+                </a>
+            </div>
+        </li>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                    {{ user.get_full_name|default:user.username }}
+                </span>
+                <img class="img-profile rounded-circle" src="
+                    {% if user.restaurante.logo %}
+                        {{ user.restaurante.logo.url }}
+                    {% else %}
+                        {% static 'img/default-avatar.png' %}
+                    {% endif %}
+                " width="32" height="32">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="{% url 'dashboard:configuracion_restaurante' %}">
+                    <i class="bi bi-person me-2"></i> Perfil
+                </a>
+                <a class="dropdown-item" href="{% url 'dashboard:estadisticas' %}">
+                    <i class="bi bi-graph-up me-2"></i> Estadísticas
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                    <i class="bi bi-box-arrow-right me-2 text-danger"></i> Cerrar Sesión
+                </a>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+<!-- Logout Modal-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">¿Listo para irte?</h5>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Selecciona "Cerrar Sesión" si estás listo para terminar tu sesión actual.
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                <a class="btn btn-danger" href="{% url 'logout' %}">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+</div>

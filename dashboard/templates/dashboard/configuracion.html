@@ -1,0 +1,98 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Configuración del Restaurante{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Configuración del Restaurante</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre del Restaurante</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ restaurante.nombre }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="telefono" name="telefono" value="{{ restaurante.telefono }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="2">{{ restaurante.direccion }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ restaurante.email }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="horario" class="form-label">Horario</label>
+                                <input type="text" class="form-control" id="horario" name="horario" value="{{ restaurante.horario }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ restaurante.descripcion }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo del Restaurante</label>
+                            {% if restaurante.logo %}
+                            <div class="mb-2">
+                                <img src="{{ restaurante.logo.url }}" alt="Logo" style="max-height: 100px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="mb-3">Configuración del Menú QR</h6>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="qr_uuid" class="form-label">UUID del QR</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="qr_uuid" value="{{ restaurante.qr_uuid }}" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copiarUUID()">Copiar</button>
+                                </div>
+                                <small class="text-muted">
+                                    URL pública:
+                                    <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" target="_blank">
+                                        Ver carta pública
+                                    </a>
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copiarUUID() {
+    var uuid = document.getElementById('qr_uuid');
+    uuid.select();
+    document.execCommand('copy');
+    alert('UUID copiado al portapapeles');
+}
+</script>
+{% endblock %}

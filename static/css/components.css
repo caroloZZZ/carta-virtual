@@ -1,0 +1,272 @@
+/*
+   COMPONENTES REUTILIZABLES
+*/
+
+/* ALERTAS */
+.alert {
+    padding: 15px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* BREADCRUMB */
+.breadcrumb {
+    padding: 0;
+    margin-bottom: 20px;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.breadcrumb-item a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--gray);
+}
+
+.breadcrumb-separator {
+    color: var(--gray);
+}
+
+/* PAGINACIÓN */
+.pagination {
+    display: flex;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.page-item {
+    list-style: none;
+}
+
+.page-link {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    color: var(--primary);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: var(--transition);
+}
+
+.page-link:hover {
+    background: var(--gray-light);
+}
+
+.page-item.active .page-link {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* BADGE DE ESTADO */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge i {
+    font-size: 0.7rem;
+}
+
+/* CARD DE PRODUCTO */
+.product-card {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.product-image {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.product-body {
+    padding: 15px;
+}
+
+.product-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.product-price {
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.product-badges {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+/* TAB CONTAINER */
+.tab-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tab-header {
+    display: flex;
+    border-bottom: 1px solid var(--gray-light);
+    background: #f8f9fa;
+}
+
+.tab-button {
+    padding: 15px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--gray);
+    transition: var(--transition);
+}
+
+.tab-button:hover {
+    color: var(--dark);
+    background: rgba(0,0,0,0.05);
+}
+
+.tab-button.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: white;
+}
+
+.tab-content {
+    padding: 20px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+/* LOADING SKELETON */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 12px;
+    margin-bottom: 10px;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 60%;
+    margin-bottom: 15px;
+}
+
+.skeleton-image {
+    height: 200px;
+    width: 100%;
+    margin-bottom: 15px;
+}

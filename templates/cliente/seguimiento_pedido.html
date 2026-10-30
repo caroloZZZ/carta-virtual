@@ -1,0 +1,156 @@
+{% extends 'base_publica.html' %}
+{% load static %}
+
+{% block title %}Seguimiento de Pedido - {{ restaurante.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .pedido-header { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; text-align: center; }
+    .pedido-header h2 { color: var(--primary); margin-bottom: 10px; }
+    .info-card { background: var(--light); border-radius: 15px; padding: 15px; text-align: center; }
+    .info-card i { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+
+    .estado-timeline { background: white; border-radius: 20px; padding: 30px 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .timeline-step { display: flex; align-items: center; margin-bottom: 25px; position: relative; opacity: 0.5; transition: all 0.5s ease; }
+    .timeline-step.completed, .timeline-step.active { opacity: 1; }
+    .timeline-step:last-child { margin-bottom: 0; }
+
+    .step-icon { width: 45px; height: 45px; border-radius: 50%; background: #f1f3f5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 15px; z-index: 2; transition: all 0.3s; }
+    .step-icon.completed { background: var(--success); color: white; }
+    .step-icon.active { background: var(--primary); color: white; box-shadow: 0 0 0 0 rgba(230,57,70,0.7); animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1); }
+
+    @keyframes pulse-ring {
+        0% { box-shadow: 0 0 0 0 rgba(230,57,70,0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(230,57,70,0); }
+        100% { box-shadow: 0 0 0 0 rgba(230,57,70,0); }
+    }
+
+    .step-content { flex: 1; }
+    .step-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 3px; }
+    .step-time { font-size: 0.85rem; color: var(--gray); font-weight: 500;}
+
+    .step-connector { position: absolute; left: 22px; top: 45px; width: 3px; height: 30px; background: #e9ecef; z-index: 1; transition: all 0.5s; }
+    .timeline-step.completed .step-connector { background: var(--success); }
+
+    .btn-volver { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: 600; text-align: center; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tracking-container">
+    <div class="pedido-header">
+        <h2>🍽️ Pedido #{{ pedido.codigo }}</h2>
+        <p class="text-muted mb-0">Gracias por tu pedido, <strong>{{ pedido.nombre_cliente }}</strong></p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-4"><div class="info-card">
+            <i class="bi bi-clock"></i><div class="small text-muted">Total</div><div class="fw-bold">${{ pedido.total }}</div>
+        </div></div>
+        <div class="col-4"><div class="info-card">
+            <i class="bi bi-door-open"></i><div class="small text-muted">Mesa</div><div class="fw-bold">{{ pedido.mesa|default:"-" }}</div>
+        </div></div>
+        <div class="col-4"><div class="info-card">
+            <i class="bi bi-person"></i><div class="small text-muted">Estado</div><div class="fw-bold" id="estadoText">Cargando...</div>
+        </div></div>
+    </div>
+
+    <div class="estado-timeline" id="timeline">
+        <!-- JS lo llena -->
+    </div>
+
+    <div class="d-grid gap-2 mt-4">
+        <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-outline-success py-3 rounded-pill fw-bold">
+            <i class="bi bi-plus-circle me-2"></i>Hacer otro pedido
+        </a>
+        <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-light py-2 rounded-pill">
+            <i class="bi bi-arrow-left me-2"></i>Volver a la carta
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const pedidoId = {{ pedido.id }};
+const qrUuid = "{{ restaurante.qr_uuid }}";
+let pollInterval;
+let currentEstado = '';
+
+const estados = ['pendiente', 'confirmado', 'preparando', 'listo', 'entregado'];
+const estadosDisplay = {
+    'pendiente': 'Recibido',
+    'confirmado': 'Confirmado',
+    'preparando': 'En preparación',
+    'listo': 'Listo para servir',
+    'entregado': 'Entregado'
+};
+const iconos = {
+    'pendiente': 'bi-receipt',
+    'confirmado': 'bi-check2-circle',
+    'preparando': 'bi-fire',
+    'listo': 'bi-bell',
+    'entregado': 'bi-bag-check'
+};
+
+function actualizarTimeline(estadoActual, fechas = {}) {
+    if (currentEstado === estadoActual && document.querySelector('.timeline-step')) return;
+    currentEstado = estadoActual;
+
+    document.getElementById('estadoText').textContent = estadosDisplay[estadoActual] || estadoActual;
+
+    const timeline = document.getElementById('timeline');
+    let html = '';
+    const estadoIndex = estados.indexOf(estadoActual);
+
+    for (let i = 0; i < estados.length; i++) {
+        const est = estados[i];
+        let clase = '';
+        if (i < estadoIndex) clase = 'completed';
+        else if (i === estadoIndex) clase = 'active';
+
+        let horaStr = '';
+        if (fechas[est]) {
+            const dateObj = new Date(fechas[est]);
+            if (!isNaN(dateObj)) {
+                horaStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        } else if (i === estadoIndex) {
+            horaStr = 'En curso...';
+        }
+
+        html += `
+        <div class="timeline-step ${clase}">
+            <div class="step-icon ${clase}">
+                <i class="bi ${i < estadoIndex ? 'bi-check-lg' : iconos[est]}"></i>
+            </div>
+            <div class="step-content">
+                <div class="step-title">${estadosDisplay[est]}</div>
+                <div class="step-time">${horaStr}</div>
+            </div>
+            ${i < estados.length - 1 ? '<div class="step-connector"></div>' : ''}
+        </div>`;
+    }
+    timeline.innerHTML = html;
+}
+
+function cargarEstado() {
+    fetch(`/cliente/${qrUuid}/pedido/${pedidoId}/estado/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                actualizarTimeline(data.estado, data.fechas);
+                if (data.estado === 'entregado' || data.estado === 'cancelado') {
+                    clearInterval(pollInterval);
+                }
+            }
+        }).catch(console.error);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    cargarEstado();
+    pollInterval = setInterval(cargarEstado, 5000); // Cada 5 seg
+});
+</script>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Pedidos - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'includes/sidebar_dashboard.html' %}
+
+        <!-- Contenido principal -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Gestión de Pedidos</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">
+                            <i class="bi bi-funnel"></i> Filtrar
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?estado=pendiente">Pendientes</a></li>
+                            <li><a class="dropdown-item" href="?estado=confirmado">Confirmados</a></li>
+                            <li><a class="dropdown-item" href="?estado=preparando">Preparando</a></li>
+                            <li><a class="dropdown-item" href="?estado=listo">Listos</a></li>
+                            <li><a class="dropdown-item" href="?estado=entregado">Entregados</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas de pedidos -->
+            <div class="row mb-4">
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-primary">{{ pedidos_pendientes }}</h5>
+                            <p class="card-text small">Pendientes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-info">{{ pedidos_confirmados }}</h5>
+                            <p class="card-text small">Confirmados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-warning">{{ pedidos_preparando }}</h5>
+                            <p class="card-text small">Preparando</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-success">{{ pedidos_listos }}</h5>
+                            <p class="card-text small">Listos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-secondary">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-secondary">{{ pedidos_entregados }}</h5>
+                            <p class="card-text small">Entregados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                    <div class="card border-danger">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-danger">{{ pedidos_cancelados }}</h5>
+                            <p class="card-text small">Cancelados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de pedidos -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if pedidos %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Cliente</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Fecha</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pedido in pedidos %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ pedido.codigo }}</strong>
+                                                {% if pedido.mesa %}
+                                                <br><small class="text-muted">Mesa: {{ pedido.mesa }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ pedido.nombre_cliente }}
+                                                {% if pedido.telefono_cliente %}
+                                                <br><small class="text-muted">{{ pedido.telefono_cliente }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>${{ pedido.total }}</td>
+                                            <td>
+                                                {% if pedido.estado == 'pendiente' %}
+                                                <span class="badge bg-warning">🟡 Pendiente</span>
+                                                {% elif pedido.estado == 'confirmado' %}
+                                                <span class="badge bg-info">🔵 Confirmado</span>
+                                                {% elif pedido.estado == 'preparando' %}
+                                                <span class="badge bg-primary">🟠 Preparando</span>
+                                                {% elif pedido.estado == 'listo' %}
+                                                <span class="badge bg-success">🟢 Listo</span>
+                                                {% elif pedido.estado == 'entregado' %}
+                                                <span class="badge bg-secondary">✅ Entregado</span>
+                                                {% elif pedido.estado == 'cancelado' %}
+                                                <span class="badge bg-danger">❌ Cancelado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ pedido.fecha_creacion|date:"d/m H:i" }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#detallePedidoModal{{ pedido.id }}">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-outline-success dropdown-toggle"
+                                                                data-bs-toggle="dropdown">
+                                                            <i class="bi bi-arrow-clockwise"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            {% if pedido.estado != 'confirmado' %}
+                                                            <li><a class="dropdown-item" href="{% url 'cambiar_estado_pedido' pedido.id 'confirmado' %}">Confirmar</a></li>
+                                                            {% endif %}
+                                                            {% if pedido.estato != 'preparando' %}
+                                                            <li><a class="dropdown-item" href="{% url 'cambiar_estado_pedido' pedido.id 'preparando' %}">Preparando</a></li>
+                                                            {% endif %}
+                                                            {% if pedido.estado != 'listo' %}
+                                                            <li><a class="dropdown-item" href="{% url 'cambiar_estado_pedido' pedido.id 'listo' %}">Listo</a></li>
+                                                            {% endif %}
+                                                            {% if pedido.estado != 'entregado' %}
+                                                            <li><a class="dropdown-item" href="{% url 'cambiar_estado_pedido' pedido.id 'entregado' %}">Entregado</a></li>
+                                                            {% endif %}
+                                                            {% if pedido.estado != 'cancelado' %}
+                                                            <li><a class="dropdown-item text-danger" href="{% url 'cambiar_estado_pedido' pedido.id 'cancelado' %}">Cancelar</a></li>
+                                                            {% endif %}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Modal para detalles del pedido -->
+                                        <div class="modal fade" id="detallePedidoModal{{ pedido.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Pedido {{ pedido.codigo }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6>Información del Cliente</h6>
+                                                                <p><strong>Nombre:</strong> {{ pedido.nombre_cliente }}</p>
+                                                                {% if pedido.telefono_cliente %}
+                                                                <p><strong>Teléfono:</strong> {{ pedido.telefono_cliente }}</p>
+                                                                {% endif %}
+                                                                {% if pedido.mesa %}
+                                                                <p><strong>Mesa:</strong> {{ pedido.mesa }}</p>
+                                                                {% endif %}
+                                                                {% if pedido.notas %}
+                                                                <p><strong>Notas:</strong> {{ pedido.notas }}</p>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Información del Pedido</h6>
+                                                                <p><strong>Estado:</strong>
+                                                                    {% if pedido.estado == 'pendiente' %}
+                                                                    <span class="badge bg-warning">Pendiente</span>
+                                                                    {% elif pedido.estado == 'confirmado' %}
+                                                                    <span class="badge bg-info">Confirmado</span>
+                                                                    {% elif pedido.estado == 'preparando' %}
+                                                                    <span class="badge bg-primary">Preparando</span>
+                                                                    {% elif pedido.estado == 'listo' %}
+                                                                    <span class="badge bg-success">Listo</span>
+                                                                    {% elif pedido.estado == 'entregado' %}
+                                                                    <span class="badge bg-secondary">Entregado</span>
+                                                                    {% elif pedido.estado == 'cancelado' %}
+                                                                    <span class="badge bg-danger">Cancelado</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                                <p><strong>Total:</strong> ${{ pedido.total }}</p>
+                                                                <p><strong>Fecha:</strong> {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                                                <p><strong>Método de pago:</strong>
+                                                                    {% if pedido.metodo_pago == 'efectivo' %}💵 Efectivo
+                                                                    {% elif pedido.metodo_pago == 'transferencia' %}🏦 Transferencia
+                                                                    {% elif pedido.metodo_pago == 'tarjeta' %}💳 Tarjeta
+                                                                    {% endif %}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <hr>
+
+                                                        <h6>Items del Pedido</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Plato</th>
+                                                                        <th>Cantidad</th>
+                                                                        <th>Precio Unitario</th>
+                                                                        <th>Subtotal</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for item in pedido.items.all %}
+                                                                    <tr>
+                                                                        <td>{{ item.plato.nombre }}</td>
+                                                                        <td>{{ item.cantidad }}</td>
+                                                                        <td>${{ item.precio_unitario }}</td>
+                                                                        <td>${{ item.subtotal }}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                                                        <td><strong>${{ pedido.total }}</strong></td>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> No hay pedidos registrados.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

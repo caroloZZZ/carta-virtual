@@ -1,0 +1,29 @@
+{% extends 'base_publica.html' %}
+{% load static %}
+
+{% block title %}{{ restaurante.nombre }} - Restaurante{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+            {% if restaurante.logo %}
+                <img src="{{ restaurante.logo.url }}" class="rounded-circle mb-4" style="width: 120px; height: 120px; object-fit: cover;">
+            {% endif %}
+            <h1 class="display-4">{{ restaurante.nombre }}</h1>
+            <p class="lead">{{ restaurante.descripcion }}</p>
+            <p><i class="bi bi-geo-alt"></i> {{ restaurante.direccion }}</p>
+            <p><i class="bi bi-telephone"></i> {{ restaurante.telefono }}</p>
+            <hr>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'clientes:carta_publica' restaurante.qr_uuid %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-menu-button-wide"></i> Ver carta online
+                </a>
+                <a href="{% url 'clientes:reservar_mesa' restaurante.qr_uuid %}" class="btn btn-warning btn-lg">
+                    <i class="bi bi-calendar-check"></i> Reservar mesa
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Editar Plato - {{ restaurante.nombre }}{% endblock %}
+
+{% block page_title %}Editar Plato{% endblock %}
+{% block page_subtitle %}Modifica la información del plato{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:platos' %}">Platos</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Editar: {{ plato.nombre }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Imagen actual -->
+                    {% if plato.imagen %}
+                        <div class="text-center mb-4">
+                            <img src="{{ plato.imagen.url }}" alt="{{ plato.nombre }}"
+                                 class="img-thumbnail" style="max-height: 200px;">
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Categoría</label>
+                            <select class="form-select" name="categoria" required>
+                                {% for cat in categorias %}
+                                    <option value="{{ cat.id }}" {% if cat.id == plato.categoria.id %}selected{% endif %}>
+                                        {{ cat.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nombre del plato</label>
+                            <input type="text" class="form-control" name="nombre" value="{{ plato.nombre }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3">{{ plato.descripcion }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Precio ($)</label>
+                            <input type="number" class="form-control" name="precio" step="0.01" value="{{ plato.precio }}" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tiempo de preparación (min)</label>
+                            <input type="number" class="form-control" name="tiempo_preparacion" value="{{ plato.tiempo_preparacion }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Imagen</label>
+                        <input type="file" class="form-control" name="imagen" accept="image/*">
+                        <div class="form-text">Deja vacío para mantener la imagen actual</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="disponible" id="disponible"
+                                       {% if plato.disponible %}checked{% endif %}>
+                                <label class="form-check-label" for="disponible">Disponible</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="destacado" id="destacado"
+                                       {% if plato.destacado %}checked{% endif %}>
+                                <label class="form-check-label" for="destacado">Destacado</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vegetariano" id="vegetariano"
+                                       {% if plato.es_vegetariano %}checked{% endif %}>
+                                <label class="form-check-label" for="vegetariano">Vegetariano</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="picante" id="picante"
+                                       {% if plato.es_picante %}checked{% endif %}>
+                                <label class="form-check-label" for="picante">Picante</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard:platos' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
