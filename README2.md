@@ -37,3 +37,71 @@ Sistema web profesional desarrollado en Django para digitalizar el menú y la ge
 6. Crear superusuario: `python manage.py createsuperuser`.
 7. Crear Hotspot (Linux): `sudo nmcli device wifi hotspot ifname wlan0 ssid "BarWifi" password "12345678"`.
 8. Iniciar servidor: `python manage.py runserver 0.0.0.0:8000`.
+
+
+
+
+
+""estos son los pasas especificos paara usarlo desde tu pc :""
+--- INICIO README ---
+
+# 🍽️ Carta Virtual Cuba - Sistema de Pedidos Locales
+
+¡Hola! Bienvenido al proyecto **Carta Virtual Cuba**. Este es un sistema profesional desarrollado en **Django** para digitalizar el menú y la gestión de pedidos de bares y restaurantes. 
+
+El sistema está diseñado principalmente para funcionar en **Modo Local (Offline)**, es decir, el servidor corre en la PC del bar, emite una red WiFi (Hotspot) y los clientes escanean un código QR para ver el menú y ordenar desde sus mesas sin necesidad de internet.
+
+---
+
+## 🛠️ Requisitos Previos
+Antes de ejecutar el proyecto, asegúrate de tener instalado en tu PC (Linux/Ubuntu recomendado):
+*   **Python 3.10+** (`sudo apt install python3 python3-venv python3-pip`)
+*   **Git** (`sudo apt install git`)
+
+# estos comandos en la consola
+
+python3 -m venv venv
+source venv/bin/activate
+
+# lueego instalar las dependencias con  
+pip install -r requirements.txt
+---
+
+## 🚀 Instalación y Ejecución (Paso a Paso)
+
+Sigue estos comandos exactos en tu terminal para tener el sistema funcionando en menos de 5 minutos.
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/caroloZZZ/carta-virtual.git
+cd carta-virtual]
+
+# estas son las variables del entorno tuyo es decir datos de salida y entrada de el internet q usara el proyecto aqui estan los mios pero si necesitas conseguir los tuyos con este comando ves la ip  , hay q ponerla fija en la maquina q se correra el proyecto
+
+
+ip -4 addr show 
+
+
+cat > .env << 'EOF'
+DEBUG=True
+SECRET_KEY=clave-secreta-super-segura-para-desarrollo-local-123456
+ALLOWED_HOSTS=localhost,127.0.0.1,10.42.0.1
+BASE_URL=http://10.42.0.1:8000
+LOCAL_IP=10.42.0.1
+DB_NAME=admin_restaurant
+DB_USER=admin_restaurant_user
+DB_PASSWORD=AdminRest123!
+DB_HOST=localhost
+DB_PORT=5432
+EOF
+
+
+# hacer las migraciones de los datos 
+python manage.py migrate
+#crear super usuario admin
+python manage.py createsuperuser
+
+# iniciar el serve 
+python manage.py runserver 0.0.0.0:8000
+
+
