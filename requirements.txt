@@ -1,8 +1,24 @@
+# === Core ===
 Django==6.0.2
 Pillow
 qrcode==7.4.2
 python-decouple==3.8
+
+# === Servidor de producción (Fase 2) ===
 gunicorn==25.1.0
 whitenoise==6.12.0
+
+# === Formularios UI ===
 django-crispy-forms==2.0
 crispy-bootstrap5==0.7
+
+# === Procesamiento de imágenes de platos ===
+django-imagekit==6.1.0
+
+# === Módulo de pagos Cuba (v1.0, pulir en v1.1) ===
+xhtml2pdf==0.2.17
+
+# === NOTA: Channels/Redis reservados para v1.1 (notificaciones en tiempo real) ===
+# channels==4.3.2
+# channels-redis==4.3.0
+# redis==7.2.0

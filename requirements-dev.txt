@@ -1,0 +1,4 @@
+-r requirements.txt
+django-debug-toolbar==6.2.0
+pytest
+pytest-django
